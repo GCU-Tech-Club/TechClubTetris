@@ -31,6 +31,12 @@ const TETROMINOS = {
     shapes: [
         []
     ]
+  },
+  S: {
+    id: 4,
+    shapes: [
+      klafjlkjdaskljl
+    ]
   }
   // Add S, Z, J, L pieces (ids 4-7)
 };
