@@ -1,3 +1,5 @@
+import { TETROMINOS } from './Pieces.js';
+
 console.log("this is where the board goes");
 console.log(TETROMINOS);
 // Game state
