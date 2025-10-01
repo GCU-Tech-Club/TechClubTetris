@@ -1,4 +1,5 @@
-const TETROMINOS = {
+// Export tetromino definitions so other modules (game board, renderer) can import them
+export const TETROMINOS = {
   I: {
     id: 1,
     shapes: [
@@ -62,3 +63,6 @@ const TETROMINOS = {
   }
   // Add S, Z, J, L pieces (ids 4-7)
 };
+
+// Default export for convenience
+export default TETROMINOS;

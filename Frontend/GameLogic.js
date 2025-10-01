@@ -1,4 +1,7 @@
+import { TETROMINOS } from './Pieces.js';
+
 console.log("this is where the board goes");
+console.log(TETROMINOS);
 // Game state
 const game = {
   board: Array.from({ length: 20 }, () => Array(10).fill(0)),
