@@ -19,19 +19,6 @@ function spawnPiece(tetrominoKey) {
         col: 3,
         id: tetromino['id']
     };
-    /////////////// TESTING //////////////
-    // for (let i = 0; i < 4; i++) 
-    //     { 
-    //         for (let j = 0; j < 4; j++) 
-    //         { // Inner loop for columns
-    //             if (game.activePiece.shape[i][j])
-    //             {
-    //                 game.board[i + game.activePiece.row][j + game.activePiece.col] = 1;
-    //             }
-    //         }
-    // }
-    /////////////// TESTING //////////////
-
 }
 
 // Lock the active piece into the board
@@ -76,7 +63,8 @@ function testPrintBoard() {
         { 
             for (let j = 0; j < 10; j++) 
             { // Inner loop for columns
-                game.board[i][j] = 0;
+                if(game.board[i][j] == 1)
+                    game.board[i][j] = 0;
             }
         }
         for (let i = 0; i < 4; i++) 
@@ -90,20 +78,28 @@ function testPrintBoard() {
             }
         }
     }
-  for (let row = 0; row < 20; row++) {
-    console.log(game.board[row].join(' '));
-  }
+
+    for(let i = 0; i < 20; i++)
+    {
+        console.log(game.board[i].toString());
+    }
 //   console.log(game.board[2].toString());
   console.log('===================');
 }
 
 // Call it
-testPrintBoard();
+//testPrintBoard();
 spawnPiece('T');
 testPrintBoard();
-movePiece(1, 1);
+movePiece(5, 1);
 
 testPrintBoard();
 rotatePiece();
 testPrintBoard();
+lockPiece();
+testPrintBoard();
+spawnPiece('T');
+testPrintBoard();
+
+
 ///////////////////Testing//////////////////////
