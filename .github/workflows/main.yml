@@ -1,0 +1,49 @@
+name: Frontend Validation
+
+on:
+  push:
+  pull_request:
+    branches: [ "master", "main" ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js (for tools only)
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        
+    - name: Install validation tools
+      run: |
+        npm install -g html-validate
+        npm install -g stylelint stylelint-config-standard
+        npm install -g eslint
+        
+    - name: Validate HTML
+      run: |
+        echo "Checking HTML files..."
+        find . -name "*.html" -exec html-validate {} \;
+        
+    - name: Validate CSS
+      run: |
+        echo "Checking CSS files..."
+        find . -name "*.css" -exec stylelint {} \;
+        
+    - name: Validate JavaScript
+      run: |
+        echo "Checking JavaScript files..."
+        find . -name "*.js" -exec eslint {} \;
+        
+    - name: Check for broken links (if any)
+      run: |
+        echo "Checking for basic file structure..."
+        if [ ! -f "Frontend/index.html" ]; then
+          echo "Missing index.html file"
+          exit 1
+        fi
+        echo "Basic file structure looks good"
