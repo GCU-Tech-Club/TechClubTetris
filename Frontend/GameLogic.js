@@ -13,12 +13,25 @@ const game = {
 function spawnPiece(tetrominoKey) {
     const tetromino = TETROMINOS[tetrominoKey];
     game.activePiece = {
-        shape: tetromino.shapes,
+        shape: tetromino['shapes'],
         rot: 0,
         row: 0,
         col: 3,
-        id: tetromino.id
+        id: tetromino['id']
     };
+    /////////////// TESTING //////////////
+    // for (let i = 0; i < 4; i++) 
+    //     { 
+    //         for (let j = 0; j < 4; j++) 
+    //         { // Inner loop for columns
+    //             if (game.activePiece.shape[i][j])
+    //             {
+    //                 game.board[i + game.activePiece.row][j + game.activePiece.col] = 1;
+    //             }
+    //         }
+    // }
+    /////////////// TESTING //////////////
+
 }
 
 // Lock the active piece into the board
@@ -56,18 +69,41 @@ function movePiece(deltaRow, deltaCol) {
 
 ///////////////////Testing//////////////////////
 function testPrintBoard() {
-  console.log('=== TETRIS BOARD ===');
-  for (let row = 0; row < game.board.length; row++) {
+    console.log('=== TETRIS BOARD ===');
+    if(game.activePiece != null)
+    {
+        for (let i = 0; i < 20; i++) 
+        { 
+            for (let j = 0; j < 10; j++) 
+            { // Inner loop for columns
+                game.board[i][j] = 0;
+            }
+        }
+        for (let i = 0; i < 4; i++) 
+        { 
+            for (let j = 0; j < 4; j++) 
+            { // Inner loop for columns
+                if (game.activePiece.shape[game.activePiece.rot][i][j])
+                {
+                    game.board[i + game.activePiece.row][j + game.activePiece.col] = 1;
+                }
+            }
+        }
+    }
+  for (let row = 0; row < 20; row++) {
     console.log(game.board[row].join(' '));
   }
+//   console.log(game.board[2].toString());
   console.log('===================');
 }
 
 // Call it
-printBoard();
-console.log(game.board);
-spawnPiece;
-movePiece;
-movePiece;
-printBoard();
+testPrintBoard();
+spawnPiece('T');
+testPrintBoard();
+movePiece(1, 1);
+
+testPrintBoard();
+rotatePiece();
+testPrintBoard();
 ///////////////////Testing//////////////////////
