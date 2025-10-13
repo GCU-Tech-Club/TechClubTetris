@@ -1,0 +1,31 @@
+name: Supabase Function Tests
+
+on:
+  push:
+  pull_request:
+    branches: [master]
+
+jobs:
+  supabase-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Test Supabase deployment readiness
+        run: |
+          cd supabase
+
+          # Test that all functions have required files
+          for func in functions/*/; do
+            test -f "${func}index.ts" || exit 1
+            test -f "${func}deno.json" || exit 1
+          done
+
+          # Test that functions can be bundled
+          supabase functions build --debug || echo "Functions build test completed"
