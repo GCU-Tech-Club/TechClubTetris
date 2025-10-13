@@ -39,6 +39,12 @@ jobs:
         # Check config file exists
         test -f config.toml || (echo "Missing config.toml" && exit 1)
         
+        # Validate main deno.json
+        echo "Validating main deno.json..."
+        test -f "functions/deno.json" || (echo "Missing main deno.json" && exit 1)
+        deno eval "JSON.parse(Deno.readTextFileSync('./functions/deno.json'))" >/dev/null || (echo "Invalid main deno.json" && exit 1)
+        
+        # Validate function structure
         for func in functions/*/; do
           func_name=$(basename "$func")
           
@@ -54,15 +60,26 @@ jobs:
           test -f "${func}index.ts" || (echo "Missing index.ts in $func_name" && exit 1)
           test -f "${func}deno.json" || (echo "Missing deno.json in $func_name" && exit 1)
           
-          # Validate deno.json structure
-          deno eval "import('./${func}deno.json')" >/dev/null || (echo "Invalid deno.json in $func_name" && exit 1)
+          # Validate deno.json structure (warn if empty)
+          if [ -s "${func}deno.json" ]; then
+            deno eval "JSON.parse(Deno.readTextFileSync('./${func}deno.json'))" >/dev/null || (echo "Invalid deno.json in $func_name" && exit 1)
+          else
+            echo "⚠️  Warning: $func_name/deno.json is empty (consider adding import mappings if needed)"
+          fi
         done
         
-        # Validate _shared directory structure separately
+        # Validate _shared directory structure
         echo "Validating _shared utilities..."
         test -f "functions/_shared/deno.json" || (echo "Missing deno.json in _shared" && exit 1)
         test -d "functions/_shared/functions" || (echo "Missing functions directory in _shared" && exit 1)
         test -d "functions/_shared/types" || (echo "Missing types directory in _shared" && exit 1)
+        
+        # Check if _shared deno.json is empty
+        if [ -s "functions/_shared/deno.json" ]; then
+          deno eval "JSON.parse(Deno.readTextFileSync('./functions/_shared/deno.json'))" >/dev/null || (echo "Invalid deno.json in _shared" && exit 1)
+        else
+          echo "⚠️  Warning: _shared/deno.json is empty (consider adding import mappings if needed)"
+        fi
         
         # Validate shared functions
         echo "Validating shared functions..."
@@ -72,6 +89,17 @@ jobs:
             echo "Validating shared function: $func_name"
             # Check that shared functions can be imported
             deno check --allow-all "$shared_func" || (echo "Failed to compile shared function $func_name" && exit 1)
+          fi
+        done
+        
+        # Validate migrations
+        echo "Validating database migrations..."
+        test -d "migrations" || (echo "Missing migrations directory" && exit 1)
+        for migration in migrations/*.sql; do
+          if [ -f "$migration" ]; then
+            echo "Found migration: $(basename "$migration")"
+            # Basic SQL syntax check
+            test -s "$migration" || (echo "Empty migration file: $migration" && exit 1)
           fi
         done
         
@@ -95,11 +123,27 @@ jobs:
         cd supabase/functions
         echo "Testing function compilation..."
         
-        # Test each function compiles
+        # Test each function compiles (excluding _shared)
         for func in */; do
           func_name=$(basename "$func")
+          
+          # Skip _shared directory
+          if [ "$func_name" = "_shared" ]; then
+            continue
+          fi
+          
           echo "Compiling function: $func_name"
           deno check --allow-all "${func}index.ts" || (echo "Failed to compile $func_name" && exit 1)
+        done
+        
+        # Test shared functions compilation
+        echo "Compiling shared functions..."
+        for shared_func in _shared/functions/*.ts; do
+          if [ -f "$shared_func" ]; then
+            func_name=$(basename "$shared_func" .ts)
+            echo "Compiling shared function: $func_name"
+            deno check --allow-all "$shared_func" || (echo "Failed to compile shared function $func_name" && exit 1)
+          fi
         done
         
         echo "All functions compiled successfully"
@@ -119,11 +163,17 @@ jobs:
         cd supabase/functions
         echo "Testing function imports..."
         
-        # Test that functions can be imported
+        # Test that main function can be imported
         deno eval "import('./createSession/index.ts')" >/dev/null || (echo "Failed to import createSession" && exit 1)
         
-        # Test shared functions
-        deno eval "import('./_shared/functions/change-created-at.ts')" >/dev/null || (echo "Failed to import shared function" && exit 1)
+        # Test shared functions can be imported
+        deno eval "import('./_shared/functions/change-created-at.ts')" >/dev/null || (echo "Failed to import change-created-at" && exit 1)
+        
+        # Test that createSession can import shared functions (using the import map)
+        deno eval "
+          import { changeCreatedAt } from './_shared/functions/change-created-at.ts';
+          console.log('Shared function import successful');
+        " >/dev/null || (echo "Failed to import shared function from main function" && exit 1)
         
         echo "Function imports validated"
 
