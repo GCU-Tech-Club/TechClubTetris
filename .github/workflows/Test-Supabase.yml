@@ -111,7 +111,7 @@ jobs:
         echo "Linting Supabase functions..."
         
         # Lint all TypeScript files
-        deno lint --all
+        deno lint .
         
         # Check formatting
         deno fmt --check
