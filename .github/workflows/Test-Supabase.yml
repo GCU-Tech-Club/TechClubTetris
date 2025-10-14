@@ -196,10 +196,19 @@ jobs:
         cd supabase
         echo "Testing Supabase deployment readiness..."
 
-        # Test that all functions have required files
+        # Test that all functions have required files (exclude _shared)
         for func in functions/*/; do
-          test -f "${func}index.ts" || exit 1
-          test -f "${func}deno.json" || exit 1
+          func_name=$(basename "$func")
+          
+          # Skip _shared directory as it's not a function
+          if [ "$func_name" = "_shared" ]; then
+            echo "Skipping _shared directory (utilities folder)"
+            continue
+          fi
+          
+          echo "Checking function: $func_name"
+          test -f "${func}index.ts" || (echo "Missing index.ts in $func_name" && exit 1)
+          test -f "${func}deno.json" || (echo "Missing deno.json in $func_name" && exit 1)
         done
 
         # Test that functions can be bundled (without debug flag)
