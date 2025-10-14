@@ -179,19 +179,17 @@ jobs:
         cd supabase/functions
         echo "Testing function imports..."
         
-        # Test that main function can be imported
-        deno eval "import('./createSession/index.ts')" >/dev/null || (echo "Failed to import createSession" && exit 1)
+        # Quick compilation check instead of eval (much faster)
+        echo "Testing createSession compilation..."
+        deno check --all createSession/index.ts || (echo "Failed to compile createSession" && exit 1)
         
-        # Test shared functions can be imported
-        deno eval "import('./_shared/functions/change-created-at.ts')" >/dev/null || (echo "Failed to import change-created-at" && exit 1)
+        echo "Testing shared function compilation..."
+        deno check --all _shared/functions/change-created-at.ts || (echo "Failed to compile change-created-at" && exit 1)
         
-        # Test that createSession can import shared functions (using the import map)
-        deno eval "
-          import { changeCreatedAt } from './_shared/functions/change-created-at.ts';
-          console.log('Shared function import successful');
-        " >/dev/null || (echo "Failed to import shared function from main function" && exit 1)
+        echo "Testing shared types compilation..."
+        deno check --all _shared/types/session.ts || (echo "Failed to compile session types" && exit 1)
         
-        echo "Function imports validated"
+        echo "Function imports validated successfully"
 
     - name: Test Supabase deployment readiness
       run: |
