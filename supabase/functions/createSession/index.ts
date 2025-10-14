@@ -3,15 +3,12 @@
 // This enables autocomplete, go to definition, etc.
 
 // Setup type definitions for built-in Supabase Runtime APIs
-import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { createClient } from "jsr:@supabase/supabase-js"
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "jsr:@supabase/supabase-js";
 import { Session } from "../_shared/types/session.ts";
 import { changeCreatedAt } from "../_shared/functions/change-created-at.ts";
 
-console.log("Hello from Functions!")
-
-
-
+console.log("Hello from Functions!");
 
 Deno.serve(async (req) => {
   const supabase = createClient(
@@ -30,9 +27,8 @@ Deno.serve(async (req) => {
   return new Response(
     JSON.stringify(data),
     { headers: { "Content-Type": "application/json" } },
-  )
-})
-
+  );
+});
 
 /* To invoke locally:
 
