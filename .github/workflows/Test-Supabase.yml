@@ -31,31 +31,6 @@ jobs:
         curl -fsSL https://supabase.com/install.sh | sh
         echo "$HOME/.local/bin" >> $GITHUB_PATH
 
-    - name: Install Deno dependencies
-      run: |
-        cd supabase/functions
-        echo "Installing Deno dependencies..."
-        
-        # Add Supabase dependencies to main deno.json if not present
-        if ! grep -q "@supabase/supabase-js" deno.json; then
-          echo "Adding Supabase dependencies to deno.json..."
-          # Create a backup
-          cp deno.json deno.json.backup
-          
-          # Add dependencies using deno add
-          deno add @supabase/supabase-js@latest
-          deno add @supabase/functions-js@latest
-          
-          echo "✅ Dependencies added to deno.json"
-        else
-          echo "✅ Dependencies already present in deno.json"
-        fi
-        
-        # Install dependencies
-        deno install --all
-        
-        echo "Dependencies installed successfully"
-
     - name: Validate Supabase config
       run: |
         cd supabase
@@ -149,7 +124,6 @@ jobs:
             grep -E "(require-await|no-import-prefix|no-unversioned-import|no-unused-vars)" lint_output.txt | head -10
             echo ""
             echo "💡 These are suggestions to improve code quality but won't block deployment"
-            echo "📦 Dependencies have been automatically installed to resolve import issues"
           fi
           
           echo "✅ Linting completed with warnings (non-critical issues found)"
