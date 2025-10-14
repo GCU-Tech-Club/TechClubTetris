@@ -170,7 +170,7 @@ jobs:
         echo "Running function tests..."
         
         # Run all tests
-        deno test --all --parallel
+        deno test --parallel
         
         echo "All tests passed"
 
