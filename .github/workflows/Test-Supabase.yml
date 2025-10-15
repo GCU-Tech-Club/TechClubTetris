@@ -112,9 +112,9 @@ jobs:
         
         # Run linting and capture output
         if deno lint . 2>&1 | tee lint_output.txt; then
-          echo "✅ Linting passed with no issues"
+          echo " Linting passed with no issues"
         else
-          echo "⚠️  Linting completed with warnings:"
+          echo " Linting completed with warnings:"
           echo "The following are code quality suggestions (not blocking errors):"
           echo ""
           
@@ -126,7 +126,7 @@ jobs:
             echo "💡 These are suggestions to improve code quality but won't block deployment"
           fi
           
-          echo "✅ Linting completed with warnings (non-critical issues found)"
+          echo " Linting completed with warnings (non-critical issues found)"
         fi
         
         # Auto-format files
