@@ -129,10 +129,36 @@ jobs:
           echo "✅ Linting completed with warnings (non-critical issues found)"
         fi
         
-        # Check formatting
-        deno fmt --check
+        # Auto-format files
+        echo "Auto-formatting TypeScript files..."
+        deno fmt .
+        
+        # Check if any files were changed
+        if [ -n "$(git diff --name-only)" ]; then
+          echo " Files were auto-formatted:"
+          git diff --name-only
+          echo "These changes will be committed automatically"
+        else
+          echo " All files already properly formatted"
+        fi
         
         echo "Linting completed successfully"
+
+    - name: Commit auto-formatted changes
+      run: |
+        # Configure git
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        # Add and commit formatted files
+        if [ -n "$(git diff --name-only)" ]; then
+          git add .
+          git commit -m "🤖 Auto-format code with deno fmt"
+          git push origin ${{ github.ref_name }}
+          echo " Auto-formatted changes committed and pushed"
+        else
+          echo " No formatting changes needed"
+        fi
 
     - name: Test function compilation
       run: |
