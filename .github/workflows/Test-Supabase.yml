@@ -6,6 +6,10 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+  pull-requests: write
+
 # Commented out until Supabase credentials are available
 # env:
 #   SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -154,7 +158,9 @@ jobs:
         if [ -n "$(git diff --name-only)" ]; then
           git add .
           git commit -m "🤖 Auto-format code with deno fmt"
-          git push origin ${{ github.ref_name }}
+          
+          # Push using the GitHub token
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:${{ github.ref_name }}
           echo " Auto-formatted changes committed and pushed"
         else
           echo " No formatting changes needed"
