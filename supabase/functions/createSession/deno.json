@@ -1,1 +1,15 @@
-{}
+{
+  "imports": {
+    "@shared/": "../_shared/",
+    "@shared/types/": "../_shared/types/",
+    "@shared/functions/": "../_shared/functions/"
+  },
+  "tasks": {
+    "test": "deno test --allow-net --allow-env",
+    "dev": "deno run --allow-net --allow-env index.ts"
+  },
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true
+  }
+}
