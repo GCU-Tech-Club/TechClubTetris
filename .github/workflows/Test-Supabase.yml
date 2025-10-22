@@ -2,6 +2,7 @@ name: Supabase Function Tests
 
 on:
   push:
+    branches: [ main ]
   pull_request:
     branches: [ main ]
   workflow_dispatch:
@@ -10,15 +11,155 @@ permissions:
   contents: write
   pull-requests: write
 
-# Commented out until Supabase credentials are available
-# env:
-#   SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-#   SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-#   SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+env:
+  SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+  SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+  SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
 
 jobs:
-  supabase-test:
-    name: Test Supabase Functions
+  validate:
+    name: Validate Configuration
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+
+    - name: Setup Deno
+      uses: denoland/setup-deno@v1
+      with:
+        deno-version: v2.x
+
+    - name: Cache Deno dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/deno
+          ~/.deno
+        key: ${{ runner.os }}-deno-${{ hashFiles('**/deno.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-deno-
+
+    - name: Validate project structure
+      id: validate
+      run: |
+        set -euo pipefail
+        cd supabase
+        
+        # Check critical files exist
+        for file in config.toml functions/deno.json; do
+          test -f "$file" || { echo "❌ Missing $file"; exit 1; }
+        done
+        
+        # Validate main deno.json
+        deno eval "JSON.parse(Deno.readTextFileSync('./functions/deno.json'))" >/dev/null || {
+          echo "❌ Invalid main deno.json"
+          exit 1
+        }
+        
+        # Validate all function directories
+        for func in functions/*/; do
+          func_name=$(basename "$func")
+          [[ "$func_name" == "_shared" ]] && continue
+          
+          # Check required files
+          test -f "${func}index.ts" -a -f "${func}deno.json" || {
+            echo "❌ $func_name missing required files"
+            exit 1
+          }
+          
+          # Validate deno.json if not empty
+          if [ -s "${func}deno.json" ]; then
+            deno eval "JSON.parse(Deno.readTextFileSync('./${func}deno.json'))" >/dev/null || {
+              echo "❌ Invalid deno.json in $func_name"
+              exit 1
+            }
+          fi
+        done
+        
+        # Validate _shared directory
+        test -f "functions/_shared/deno.json" || { echo "❌ Missing _shared/deno.json"; exit 1; }
+        test -d "functions/_shared/functions" || { echo "❌ Missing _shared/functions"; exit 1; }
+        test -d "functions/_shared/types" || { echo "❌ Missing _shared/types"; exit 1; }
+        
+        # Validate migrations exist
+        test -d "migrations" || { echo "❌ Missing migrations directory"; exit 1; }
+        
+        echo "✅ Configuration validation passed"
+
+  lint:
+    name: Lint and Format
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+
+    - name: Setup Deno
+      uses: denoland/setup-deno@v1
+      with:
+        deno-version: v2.x
+
+    - name: Cache Deno dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/deno
+          ~/.deno
+        key: ${{ runner.os }}-deno-${{ hashFiles('**/deno.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-deno-
+
+    - name: Check formatting
+      id: format
+      run: |
+        set -euo pipefail
+        cd supabase/functions
+        
+        if deno fmt --check .; then
+          echo "✅ Code is properly formatted"
+        else
+          echo "❌ Code is not formatted. Run 'deno fmt' locally."
+          exit 1
+        fi
+
+    - name: Lint code
+      id: lint
+      run: |
+        set -euo pipefail
+        cd supabase/functions
+        
+        # Run lint and capture exit code
+        if deno lint --quiet .; then
+          echo "✅ Linting passed"
+        else
+          echo "❌ Linting failed"
+          exit 1
+        fi
+
+    - name: Auto-format and commit (main branch only)
+      if: failure() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        cd supabase/functions
+        
+        # Format the code
+        deno fmt .
+        
+        # Configure git
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        # Commit if changes exist
+        if [ -n "$(git diff --name-only)" ]; then
+          git add .
+          git commit -m "🤖 Auto-format code with deno fmt"
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:${{ github.ref_name }}
+          echo "✅ Auto-formatted changes committed"
+        fi
+
+  test:
+    name: Build and Test
+    needs: [validate]
     runs-on: ubuntu-latest
     
     steps:
@@ -35,236 +176,151 @@ jobs:
         curl -fsSL https://supabase.com/install.sh | sh
         echo "$HOME/.local/bin" >> $GITHUB_PATH
 
-    - name: Validate Supabase config
+    - name: Cache Deno dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/deno
+          ~/.deno
+        key: ${{ runner.os }}-deno-${{ hashFiles('**/deno.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-deno-
+
+    - name: Setup Supabase locally
+      if: ${{ !env.SUPABASE_URL }}
       run: |
         cd supabase
-        echo "Validating Supabase configuration..."
+        supabase start
         
-        # Check config file exists
-        test -f config.toml || (echo "Missing config.toml" && exit 1)
+        # Set local environment variables
+        echo "SUPABASE_URL=http://127.0.0.1:54321" >> $GITHUB_ENV
+        echo "SUPABASE_ANON_KEY=$(supabase status | grep 'anon key' | awk '{print $3}')" >> $GITHUB_ENV
+        echo "SUPABASE_SERVICE_ROLE_KEY=$(supabase status | grep 'service_role key' | awk '{print $3}')" >> $GITHUB_ENV
         
-        # Validate main deno.json
-        echo "Validating main deno.json..."
-        test -f "functions/deno.json" || (echo "Missing main deno.json" && exit 1)
-        deno eval "JSON.parse(Deno.readTextFileSync('./functions/deno.json'))" >/dev/null || (echo "Invalid main deno.json" && exit 1)
-        
-        # Validate function structure
-        for func in functions/*/; do
-          func_name=$(basename "$func")
-          
-          # Skip _shared directory as it's not a function
-          if [ "$func_name" = "_shared" ]; then
-            echo "Skipping _shared directory (utilities folder)"
-            continue
-          fi
-          
-          echo "Validating function: $func_name"
-          
-          # Check required files exist
-          test -f "${func}index.ts" || (echo "Missing index.ts in $func_name" && exit 1)
-          test -f "${func}deno.json" || (echo "Missing deno.json in $func_name" && exit 1)
-          
-          # Validate deno.json structure (warn if empty)
-          if [ -s "${func}deno.json" ]; then
-            deno eval "JSON.parse(Deno.readTextFileSync('./${func}deno.json'))" >/dev/null || (echo "Invalid deno.json in $func_name" && exit 1)
-          else
-            echo "⚠️  Warning: $func_name/deno.json is empty (consider adding import mappings if needed)"
-          fi
-        done
-        
-        # Validate _shared directory structure
-        echo "Validating _shared utilities..."
-        test -f "functions/_shared/deno.json" || (echo "Missing deno.json in _shared" && exit 1)
-        test -d "functions/_shared/functions" || (echo "Missing functions directory in _shared" && exit 1)
-        test -d "functions/_shared/types" || (echo "Missing types directory in _shared" && exit 1)
-        
-        # Check if _shared deno.json is empty
-        if [ -s "functions/_shared/deno.json" ]; then
-          deno eval "JSON.parse(Deno.readTextFileSync('./functions/_shared/deno.json'))" >/dev/null || (echo "Invalid deno.json in _shared" && exit 1)
-        else
-          echo "⚠️  Warning: _shared/deno.json is empty (consider adding import mappings if needed)"
-        fi
-        
-        # Validate shared functions
-        echo "Validating shared functions..."
-        for shared_func in functions/_shared/functions/*.ts; do
-          if [ -f "$shared_func" ]; then
-            func_name=$(basename "$shared_func" .ts)
-            echo "Validating shared function: $func_name"
-            # Check that shared functions can be imported
-            deno check --all "$shared_func" || (echo "Failed to compile shared function $func_name" && exit 1)
-          fi
-        done
-        
-        # Validate migrations
-        echo "Validating database migrations..."
-        test -d "migrations" || (echo "Missing migrations directory" && exit 1)
-        for migration in migrations/*.sql; do
-          if [ -f "$migration" ]; then
-            echo "Found migration: $(basename "$migration")"
-            # Basic SQL syntax check
-            test -s "$migration" || (echo "Empty migration file: $migration" && exit 1)
-          fi
-        done
-        
-        echo "Supabase configuration validation passed"
+        echo "✅ Supabase local instance started"
 
-    - name: Lint Supabase functions
+    - name: Compile functions
+      id: build
       run: |
+        set -euo pipefail
         cd supabase/functions
-        echo "Linting Supabase functions..."
         
-        # Run linting and capture output
-        if deno lint . 2>&1 | tee lint_output.txt; then
-          echo " Linting passed with no issues"
-        else
-          echo " Linting completed with warnings:"
-          echo "The following are code quality suggestions (not blocking errors):"
-          echo ""
-          
-          # Show specific warnings for non-critical issues
-          if grep -q "require-await\|no-import-prefix\|no-unversioned-import\|no-unused-vars" lint_output.txt; then
-            echo "🔍 Code Quality Suggestions:"
-            grep -E "(require-await|no-import-prefix|no-unversioned-import|no-unused-vars)" lint_output.txt | head -10
-            echo ""
-            echo "💡 These are suggestions to improve code quality but won't block deployment"
-          fi
-          
-          echo " Linting completed with warnings (non-critical issues found)"
-        fi
-        
-        # Auto-format files
-        echo "Auto-formatting TypeScript files..."
-        deno fmt .
-        
-        # Check if any files were changed
-        if [ -n "$(git diff --name-only)" ]; then
-          echo " Files were auto-formatted:"
-          git diff --name-only
-          echo "These changes will be committed automatically"
-        else
-          echo " All files already properly formatted"
-        fi
-        
-        echo "Linting completed successfully"
-
-    - name: Commit auto-formatted changes
-      run: |
-        # Configure git
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        
-        # Add and commit formatted files
-        if [ -n "$(git diff --name-only)" ]; then
-          git add .
-          git commit -m "🤖 Auto-format code with deno fmt"
-          
-          # Push using the GitHub token
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:${{ github.ref_name }}
-          echo " Auto-formatted changes committed and pushed"
-        else
-          echo " No formatting changes needed"
-        fi
-
-    - name: Test function compilation
-      run: |
-        cd supabase/functions
-        echo "Testing function compilation..."
-        
-        # Test each function compiles (excluding _shared)
+        # Compile each function
         for func in */; do
           func_name=$(basename "$func")
+          [[ "$func_name" == "_shared" ]] && continue
           
-          # Skip _shared directory
-          if [ "$func_name" = "_shared" ]; then
-            continue
-          fi
-          
-          echo "Compiling function: $func_name"
-          deno check --all "${func}index.ts" || (echo "Failed to compile $func_name" && exit 1)
+          deno check --all "${func}index.ts" || {
+            echo "❌ Failed to compile $func_name"
+            exit 1
+          }
         done
         
-        # Test shared functions compilation
-        echo "Compiling shared functions..."
+        # Compile shared functions
         for shared_func in _shared/functions/*.ts; do
           if [ -f "$shared_func" ]; then
-            func_name=$(basename "$shared_func" .ts)
-            echo "Compiling shared function: $func_name"
-            deno check --all "$shared_func" || (echo "Failed to compile shared function $func_name" && exit 1)
+            deno check --all "$shared_func" || {
+              echo "❌ Failed to compile $(basename $shared_func)"
+              exit 1
+            }
           fi
         done
         
-        echo "All functions compiled successfully"
+        echo "✅ All functions compiled successfully"
 
-    - name: Run function tests
+    - name: Run unit tests
+      id: test
       run: |
+        set -euo pipefail
         cd supabase/functions
-        echo "Running function tests..."
         
-        # Run all tests
-        deno test --parallel
-        
-        echo "All tests passed"
-
-    - name: Test function imports
-      run: |
-        cd supabase/functions
-        echo "Testing function imports..."
-        
-        # Quick compilation check instead of eval (much faster)
-        echo "Testing createSession compilation..."
-        deno check --all createSession/index.ts || (echo "Failed to compile createSession" && exit 1)
-        
-        echo "Testing shared function compilation..."
-        deno check --all _shared/functions/change-created-at.ts || (echo "Failed to compile change-created-at" && exit 1)
-        
-        echo "Testing shared types compilation..."
-        deno check --all _shared/types/session.ts || (echo "Failed to compile session types" && exit 1)
-        
-        echo "Function imports validated successfully"
-
-    - name: Test Supabase deployment readiness
-      run: |
-        cd supabase
-        echo "Testing Supabase deployment readiness..."
-
-        # Test that all functions have required files (exclude _shared)
-        for func in functions/*/; do
-          func_name=$(basename "$func")
+        # Run tests with coverage
+        if deno test --allow-all --parallel --coverage=coverage/ 2>&1; then
+          echo "✅ All tests passed"
           
-          # Skip _shared directory as it's not a function
-          if [ "$func_name" = "_shared" ]; then
-            echo "Skipping _shared directory (utilities folder)"
-            continue
-          fi
+          # Generate coverage report
+          deno coverage coverage/ --lcov --output=coverage/lcov.info
           
-          echo "Checking function: $func_name"
-          test -f "${func}index.ts" || (echo "Missing index.ts in $func_name" && exit 1)
-          test -f "${func}deno.json" || (echo "Missing deno.json in $func_name" && exit 1)
-        done
-
-        # Test that functions can be bundled (without debug flag)
-        echo "Testing function bundling..."
-        if supabase functions build 2>/dev/null; then
-          echo "✅ Functions build successfully"
+          # Get coverage percentage
+          coverage=$(deno coverage coverage/ | grep -oP 'cover \K[0-9.]+' || echo "0")
+          echo "📊 Test coverage: ${coverage}%"
+          
+          # Optional: Fail if coverage below threshold (commented out by default)
+          # threshold=80
+          # if (( $(echo "$coverage < $threshold" | bc -l) )); then
+          #   echo "❌ Coverage ${coverage}% is below threshold ${threshold}%"
+          #   exit 1
+          # fi
         else
-          echo "⚠️  Functions build test skipped (no Supabase credentials)"
-          echo "This is expected when running without production credentials"
+          echo "❌ Tests failed"
+          exit 1
         fi
-        
-        echo "Deployment readiness test completed"
 
+    - name: Test deployment readiness
+      id: deploy
+      run: |
+        set -euo pipefail
+        cd supabase
+        
+        # Verify all functions can be bundled
+        if supabase functions build 2>&1 | grep -q "Error"; then
+          echo "❌ Function bundling failed"
+          exit 1
+        else
+          echo "✅ Functions are deployment ready"
+        fi
+
+    - name: Generate deployment preview
+      if: github.event_name == 'pull_request'
+      run: |
+        {
+          echo "### 📦 Deployment Preview"
+          echo ""
+          echo "**Functions ready to deploy:**"
+          echo ""
+        } >> $GITHUB_STEP_SUMMARY
+        
+        cd supabase/functions
+        for func in */; do
+          func_name=$(basename "$func")
+          [[ "$func_name" == "_shared" ]] && continue
+          echo "- \`$func_name\`" >> $GITHUB_STEP_SUMMARY
+        done
+        
+        {
+          echo ""
+          echo "**Environment:** Preview (requires Supabase credentials for deployment)"
+        } >> $GITHUB_STEP_SUMMARY
+
+  summary:
+    name: Test Summary
+    needs: [validate, lint, test]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
     - name: Create test summary
       run: |
-        echo "##  Supabase Function Testing Summary" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "| Test | Status |" >> $GITHUB_STEP_SUMMARY
-        echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
-        echo "| Configuration Validation |  Passed |" >> $GITHUB_STEP_SUMMARY
-        echo "| Function Linting |  Passed |" >> $GITHUB_STEP_SUMMARY
-        echo "| Function Compilation |  Passed |" >> $GITHUB_STEP_SUMMARY
-        echo "| Unit Tests | Passed |" >> $GITHUB_STEP_SUMMARY
-        echo "| Import Validation |  Passed |" >> $GITHUB_STEP_SUMMARY
-        echo "| Deployment Readiness | Passed |" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "**Note:** All Supabase functions are ready for deployment when credentials are configured." >> $GITHUB_STEP_SUMMARY
+        {
+          echo "## 🧪 Supabase Function Testing Summary"
+          echo ""
+          echo "| Test | Status |"
+          echo "|------|--------|"
+          echo "| Configuration | ${{ needs.validate.result == 'success' && '✅ Passed' || '❌ Failed' }} |"
+          echo "| Formatting | ${{ needs.lint.result == 'success' && '✅ Passed' || '❌ Failed' }} |"
+          echo "| Compilation | ${{ needs.test.result == 'success' && '✅ Passed' || '❌ Failed' }} |"
+          echo "| Unit Tests | ${{ needs.test.result == 'success' && '✅ Passed' || '❌ Failed' }} |"
+          echo "| Deployment Ready | ${{ needs.test.result == 'success' && '✅ Yes' || '❌ No' }} |"
+          echo ""
+          
+          if [[ "${{ needs.validate.result }}" == "success" && "${{ needs.lint.result }}" == "success" && "${{ needs.test.result }}" == "success" ]]; then
+            echo "**Status:** ✅ All checks passed - Ready for deployment"
+          else
+            echo "**Status:** ❌ Some checks failed - Review errors above"
+          fi
+          
+          echo ""
+          echo "---"
+          echo ""
+          echo "**Note:** When Supabase credentials are configured, functions will be tested against a real instance."
+        } >> $GITHUB_STEP_SUMMARY
