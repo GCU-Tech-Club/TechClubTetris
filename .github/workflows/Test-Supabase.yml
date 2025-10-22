@@ -2,7 +2,7 @@ name: Supabase Function Tests
 
 on:
   push:
-    branches: [ main, Arie-Testing ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
   workflow_dispatch:
@@ -166,10 +166,10 @@ jobs:
       with:
         deno-version: v2.x
 
-    - name: Install Supabase CLI
-      run: |
-        curl -fsSL https://supabase.com/install.sh | sh
-        echo "$HOME/.local/bin" >> $GITHUB_PATH
+    - name: Setup Supabase CLI
+      uses: supabase/setup-cli@v1
+      with:
+        version: latest
 
     - name: Cache Deno dependencies
       uses: actions/cache@v3
@@ -183,9 +183,6 @@ jobs:
 
     - name: Setup local Supabase
       run: |
-        # Add Supabase CLI to PATH for this step
-        export PATH="$HOME/.local/bin:$PATH"
-        
         cd supabase
         supabase start
         
@@ -252,9 +249,6 @@ jobs:
       id: deploy
       run: |
         set -euo pipefail
-        
-        # Ensure Supabase CLI is in PATH for this step
-        export PATH="$HOME/.local/bin:$PATH"
         
         cd supabase
         
