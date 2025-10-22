@@ -2,7 +2,7 @@ name: Supabase Function Tests
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, Arie-Testing ]
   pull_request:
     branches: [ main ]
   workflow_dispatch:
