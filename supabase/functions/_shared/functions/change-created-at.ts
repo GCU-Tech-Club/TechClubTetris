@@ -1,4 +1,4 @@
-import { Session } from "../types/session.ts";
+import { Session } from "@shared/types/session.ts";
 
 export const changeCreatedAt = (session: Session): Session => {
   return {
