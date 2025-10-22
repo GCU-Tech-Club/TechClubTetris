@@ -2,333 +2,322 @@ name: Supabase Function Tests
 
 on:
   push:
-    branches: [main, Arie-Testing]
+    branches: [ main ]
   pull_request:
-    branches: [main]
+    branches: [ main ]
   workflow_dispatch:
 
 permissions:
   contents: write
   pull-requests: write
 
-env:
-  SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-  SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-  SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-
 jobs:
   validate:
     name: Validate Configuration
     runs-on: ubuntu-latest
-
+    
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+    - name: Checkout repo
+      uses: actions/checkout@v4
 
-      - name: Setup Deno
-        uses: denoland/setup-deno@v1
-        with:
-          deno-version: v2.x
+    - name: Setup Deno
+      uses: denoland/setup-deno@v1
+      with:
+        deno-version: v2.x
 
-      - name: Cache Deno dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cache/deno
-            ~/.deno
-          key: ${{ runner.os }}-deno-${{ hashFiles('**/deno.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-deno-
+    - name: Cache Deno dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/deno
+          ~/.deno
+        key: ${{ runner.os }}-deno-${{ hashFiles('**/deno.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-deno-
 
-      - name: Validate project structure
-        id: validate
-        run: |
-          set -euo pipefail
-          cd supabase
-
-          # Check critical files exist
-          for file in config.toml functions/deno.json; do
-            test -f "$file" || { echo "❌ Missing $file"; exit 1; }
-          done
-
-          # Validate main deno.json
-          deno eval "JSON.parse(Deno.readTextFileSync('./functions/deno.json'))" >/dev/null || {
-            echo "❌ Invalid main deno.json"
+    - name: Validate project structure
+      id: validate
+      run: |
+        set -euo pipefail
+        cd supabase
+        
+        # Check critical files exist
+        for file in config.toml functions/deno.json; do
+          test -f "$file" || { echo "❌ Missing $file"; exit 1; }
+        done
+        
+        # Validate main deno.json
+        deno eval "JSON.parse(Deno.readTextFileSync('./functions/deno.json'))" >/dev/null || {
+          echo "❌ Invalid main deno.json"
+          exit 1
+        }
+        
+        # Validate all function directories
+        for func in functions/*/; do
+          func_name=$(basename "$func")
+          [[ "$func_name" == "_shared" ]] && continue
+          
+          # Check required files
+          test -f "${func}index.ts" -a -f "${func}deno.json" || {
+            echo "❌ $func_name missing required files"
             exit 1
           }
-
-          # Validate all function directories
-          for func in functions/*/; do
-            func_name=$(basename "$func")
-            [[ "$func_name" == "_shared" ]] && continue
-
-            # Check required files
-            test -f "${func}index.ts" -a -f "${func}deno.json" || {
-              echo "❌ $func_name missing required files"
+          
+          # Validate deno.json if not empty
+          if [ -s "${func}deno.json" ]; then
+            deno eval "JSON.parse(Deno.readTextFileSync('./${func}deno.json'))" >/dev/null || {
+              echo "❌ Invalid deno.json in $func_name"
               exit 1
             }
-
-            # Validate deno.json if not empty
-            if [ -s "${func}deno.json" ]; then
-              deno eval "JSON.parse(Deno.readTextFileSync('./${func}deno.json'))" >/dev/null || {
-                echo "❌ Invalid deno.json in $func_name"
-                exit 1
-              }
-            fi
-          done
-
-          # Validate _shared directory
-          test -f "functions/_shared/deno.json" || { echo "❌ Missing _shared/deno.json"; exit 1; }
-          test -d "functions/_shared/functions" || { echo "❌ Missing _shared/functions"; exit 1; }
-          test -d "functions/_shared/types" || { echo "❌ Missing _shared/types"; exit 1; }
-
-          # Validate migrations exist
-          test -d "migrations" || { echo "❌ Missing migrations directory"; exit 1; }
-
-          echo "✅ Configuration validation passed"
+          fi
+        done
+        
+        # Validate _shared directory
+        test -f "functions/_shared/deno.json" || { echo "❌ Missing _shared/deno.json"; exit 1; }
+        test -d "functions/_shared/functions" || { echo "❌ Missing _shared/functions"; exit 1; }
+        test -d "functions/_shared/types" || { echo "❌ Missing _shared/types"; exit 1; }
+        
+        # Validate migrations exist
+        test -d "migrations" || { echo "❌ Missing migrations directory"; exit 1; }
+        
+        echo "✅ Configuration validation passed"
 
   lint:
     name: Lint and Format
     runs-on: ubuntu-latest
-
+    
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+    - name: Checkout repo
+      uses: actions/checkout@v4
 
-      - name: Setup Deno
-        uses: denoland/setup-deno@v1
-        with:
-          deno-version: v2.x
+    - name: Setup Deno
+      uses: denoland/setup-deno@v1
+      with:
+        deno-version: v2.x
 
-      - name: Cache Deno dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cache/deno
-            ~/.deno
-          key: ${{ runner.os }}-deno-${{ hashFiles('**/deno.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-deno-
+    - name: Cache Deno dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/deno
+          ~/.deno
+        key: ${{ runner.os }}-deno-${{ hashFiles('**/deno.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-deno-
 
-      - name: Check formatting
-        id: format
-        run: |
-          set -euo pipefail
-          cd supabase/functions
+    - name: Check formatting
+      id: format
+      run: |
+        set -euo pipefail
+        cd supabase/functions
+        
+        if deno fmt --check .; then
+          echo "✅ Code is properly formatted"
+        else
+          echo "❌ Code is not formatted. Run 'deno fmt' locally."
+          exit 1
+        fi
 
-          if deno fmt --check .; then
-            echo "✅ Code is properly formatted"
-          else
-            echo "❌ Code is not formatted. Run 'deno fmt' locally."
-            exit 1
-          fi
+    - name: Lint code
+      id: lint
+      continue-on-error: true
+      run: |
+        cd supabase/functions
+        
+        # Run lint and show results without failing
+        if deno lint .; then
+          echo "✅ No linting issues found"
+        else
+          echo "⚠️  Linting issues detected (non-blocking)"
+          echo "Run 'deno lint' locally to see details"
+        fi
 
-      - name: Lint code
-        id: lint
-        continue-on-error: true
-        run: |
-          cd supabase/functions
-
-          # Run lint and show results without failing
-          if deno lint .; then
-            echo "✅ No linting issues found"
-          else
-            echo "⚠️  Linting issues detected (non-blocking)"
-            echo "Run 'deno lint' locally to see details"
-          fi
-
-      - name: Auto-format and commit (main branch only)
-        if: failure() && github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: |
-          cd supabase/functions
-
-          # Format the code
-          deno fmt .
-
-          # Configure git
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-
-          # Commit if changes exist
-          if [ -n "$(git diff --name-only)" ]; then
-            git add .
-            git commit -m "🤖 Auto-format code with deno fmt"
-            git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:${{ github.ref_name }}
-            echo "✅ Auto-formatted changes committed"
-          fi
+    - name: Auto-format and commit (main branch only)
+      if: failure() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        cd supabase/functions
+        
+        # Format the code
+        deno fmt .
+        
+        # Configure git
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        # Commit if changes exist
+        if [ -n "$(git diff --name-only)" ]; then
+          git add .
+          git commit -m "🤖 Auto-format code with deno fmt"
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:${{ github.ref_name }}
+          echo "✅ Auto-formatted changes committed"
+        fi
 
   test:
     name: Build and Test
     needs: [validate]
     runs-on: ubuntu-latest
-
+    
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+    - name: Checkout repo
+      uses: actions/checkout@v4
 
-      - name: Setup Deno
-        uses: denoland/setup-deno@v1
-        with:
-          deno-version: v2.x
+    - name: Setup Deno
+      uses: denoland/setup-deno@v1
+      with:
+        deno-version: v2.x
 
-      - name: Install Supabase CLI
-        run: |
-          curl -fsSL https://supabase.com/install.sh | sh
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+    - name: Install Supabase CLI
+      run: |
+        curl -fsSL https://supabase.com/install.sh | sh
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
 
-      - name: Cache Deno dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cache/deno
-            ~/.deno
-          key: ${{ runner.os }}-deno-${{ hashFiles('**/deno.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-deno-
+    - name: Cache Deno dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/deno
+          ~/.deno
+        key: ${{ runner.os }}-deno-${{ hashFiles('**/deno.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-deno-
 
-      - name: Setup Supabase locally
-        if: ${{ !env.SUPABASE_URL }}
-        run: |
-          # Ensure Supabase CLI is in PATH for this step
-          export PATH="$HOME/.local/bin:$PATH"
+    - name: Setup local Supabase
+      run: |
+        # Add Supabase CLI to PATH for this step
+        export PATH="$HOME/.local/bin:$PATH"
+        
+        cd supabase
+        supabase start
+        
+        echo "✅ Supabase local instance started with migrations applied"
 
-          cd supabase
-          supabase start
-
-          # Set local environment variables
-          echo "SUPABASE_URL=http://127.0.0.1:54321" >> $GITHUB_ENV
-          echo "SUPABASE_ANON_KEY=$(supabase status | grep 'anon key' | awk '{print $3}')" >> $GITHUB_ENV
-          echo "SUPABASE_SERVICE_ROLE_KEY=$(supabase status | grep 'service_role key' | awk '{print $3}')" >> $GITHUB_ENV
-
-          echo "✅ Supabase local instance started"
-
-      - name: Compile functions
-        id: build
-        run: |
-          set -euo pipefail
-          cd supabase/functions
-
-          # Compile each function
-          for func in */; do
-            func_name=$(basename "$func")
-            [[ "$func_name" == "_shared" ]] && continue
-
-            deno check --all "${func}index.ts" || {
-              echo "❌ Failed to compile $func_name"
+    - name: Compile functions
+      id: build
+      run: |
+        set -euo pipefail
+        cd supabase/functions
+        
+        # Compile each function
+        for func in */; do
+          func_name=$(basename "$func")
+          [[ "$func_name" == "_shared" ]] && continue
+          
+          deno check --all "${func}index.ts" || {
+            echo "❌ Failed to compile $func_name"
+            exit 1
+          }
+        done
+        
+        # Compile shared functions
+        for shared_func in _shared/functions/*.ts; do
+          if [ -f "$shared_func" ]; then
+            deno check --all "$shared_func" || {
+              echo "❌ Failed to compile $(basename $shared_func)"
               exit 1
             }
-          done
-
-          # Compile shared functions
-          for shared_func in _shared/functions/*.ts; do
-            if [ -f "$shared_func" ]; then
-              deno check --all "$shared_func" || {
-                echo "❌ Failed to compile $(basename $shared_func)"
-                exit 1
-              }
-            fi
-          done
-
-          echo "✅ All functions compiled successfully"
-
-      - name: Run unit tests
-        id: test
-        run: |
-          set -euo pipefail
-          cd supabase/functions
-
-          # Run tests with coverage
-          if deno test --allow-all --parallel --coverage=coverage/ 2>&1; then
-            echo "✅ All tests passed"
-
-            # Generate coverage report
-            deno coverage coverage/ --lcov --output=coverage/lcov.info
-
-            # Get coverage percentage
-            coverage=$(deno coverage coverage/ | grep -oP 'cover \K[0-9.]+' || echo "0")
-            echo "📊 Test coverage: ${coverage}%"
-
-            # Optional: Fail if coverage below threshold (commented out by default)
-            # threshold=80
-            # if (( $(echo "$coverage < $threshold" | bc -l) )); then
-            #   echo "❌ Coverage ${coverage}% is below threshold ${threshold}%"
-            #   exit 1
-            # fi
-          else
-            echo "❌ Tests failed"
-            exit 1
           fi
+        done
+        
+        echo "✅ All functions compiled successfully"
 
-      - name: Test deployment readiness
-        id: deploy
-        run: |
-          set -euo pipefail
+    - name: Run unit tests
+      id: test
+      run: |
+        set -euo pipefail
+        cd supabase/functions
+        
+        # Run tests with coverage
+        if deno test --allow-all --parallel --coverage=coverage/ 2>&1; then
+          echo "✅ All tests passed"
+          
+          # Generate coverage report
+          deno coverage coverage/ --lcov --output=coverage/lcov.info
+          
+          # Get coverage percentage
+          coverage=$(deno coverage coverage/ | grep -oP 'cover \K[0-9.]+' || echo "0")
+          echo "📊 Test coverage: ${coverage}%"
+          
+          # Optional: Fail if coverage below threshold (commented out by default)
+          # threshold=80
+          # if (( $(echo "$coverage < $threshold" | bc -l) )); then
+          #   echo "❌ Coverage ${coverage}% is below threshold ${threshold}%"
+          #   exit 1
+          # fi
+        else
+          echo "❌ Tests failed"
+          exit 1
+        fi
 
-          # Ensure Supabase CLI is in PATH for this step
-          export PATH="$HOME/.local/bin:$PATH"
+    - name: Test deployment readiness
+      id: deploy
+      run: |
+        set -euo pipefail
+        
+        # Ensure Supabase CLI is in PATH for this step
+        export PATH="$HOME/.local/bin:$PATH"
+        
+        cd supabase
+        
+        # Verify all functions can be bundled
+        if supabase functions build 2>&1 | grep -q "Error"; then
+          echo "❌ Function bundling failed"
+          exit 1
+        else
+          echo "✅ Functions are deployment ready"
+        fi
 
-          cd supabase
-
-          # Verify all functions can be bundled
-          if supabase functions build 2>&1 | grep -q "Error"; then
-            echo "❌ Function bundling failed"
-            exit 1
-          else
-            echo "✅ Functions are deployment ready"
-          fi
-
-      - name: Generate deployment preview
-        if: github.event_name == 'pull_request'
-        run: |
-          {
-            echo "### 📦 Deployment Preview"
-            echo ""
-            echo "**Functions ready to deploy:**"
-            echo ""
-          } >> $GITHUB_STEP_SUMMARY
-
-          cd supabase/functions
-          for func in */; do
-            func_name=$(basename "$func")
-            [[ "$func_name" == "_shared" ]] && continue
-            echo "- \`$func_name\`" >> $GITHUB_STEP_SUMMARY
-          done
-
-          {
-            echo ""
-            echo "**Environment:** Preview (requires Supabase credentials for deployment)"
-          } >> $GITHUB_STEP_SUMMARY
+    - name: Generate deployment preview
+      if: github.event_name == 'pull_request'
+      run: |
+        {
+          echo "### 📦 Deployment Preview"
+          echo ""
+          echo "**Functions ready to deploy:**"
+          echo ""
+        } >> $GITHUB_STEP_SUMMARY
+        
+        cd supabase/functions
+        for func in */; do
+          func_name=$(basename "$func")
+          [[ "$func_name" == "_shared" ]] && continue
+          echo "- \`$func_name\`" >> $GITHUB_STEP_SUMMARY
+        done
+        
+        {
+          echo ""
+          echo "**Environment:** Preview (requires Supabase credentials for deployment)"
+        } >> $GITHUB_STEP_SUMMARY
 
   summary:
     name: Test Summary
     needs: [validate, lint, test]
     runs-on: ubuntu-latest
     if: always()
-
+    
     steps:
-      - name: Create test summary
-        run: |
-          {
-            echo "## 🧪 Supabase Function Testing Summary"
-            echo ""
-            echo "| Test | Status |"
-            echo "|------|--------|"
-            echo "| Configuration | ${{ needs.validate.result == 'success' && '✅ Passed' || '❌ Failed' }} |"
-            echo "| Formatting | ${{ needs.lint.result == 'success' && '✅ Passed' || '❌ Failed' }} |"
-            echo "| Linting | ${{ needs.lint.result == 'success' && '✅ Clean' || '⚠️  Warnings' }} |"
-            echo "| Compilation | ${{ needs.test.result == 'success' && '✅ Passed' || '❌ Failed' }} |"
-            echo "| Unit Tests | ${{ needs.test.result == 'success' && '✅ Passed' || '❌ Failed' }} |"
-            echo "| Deployment Ready | ${{ needs.test.result == 'success' && '✅ Yes' || '❌ No' }} |"
-            echo ""
-
-            if [[ "${{ needs.validate.result }}" == "success" && "${{ needs.lint.result }}" == "success" && "${{ needs.test.result }}" == "success" ]]; then
-              echo "**Status:** ✅ All checks passed - Ready for deployment"
-            else
-              echo "**Status:** ❌ Some checks failed - Review errors above"
-            fi
-
-            echo ""
-            echo "---"
-            echo ""
-            echo "**Note:** When Supabase credentials are configured, functions will be tested against a real instance."
-          } >> $GITHUB_STEP_SUMMARY
+    - name: Create test summary
+      run: |
+        {
+          echo "## 🧪 Supabase Function Testing Summary"
+          echo ""
+          echo "| Test | Status |"
+          echo "|------|--------|"
+          echo "| Configuration | ${{ needs.validate.result == 'success' && '✅ Passed' || '❌ Failed' }} |"
+          echo "| Formatting | ${{ needs.lint.result == 'success' && '✅ Passed' || '❌ Failed' }} |"
+          echo "| Linting | ${{ needs.lint.result == 'success' && '✅ Clean' || '⚠️  Warnings' }} |"
+          echo "| Compilation | ${{ needs.test.result == 'success' && '✅ Passed' || '❌ Failed' }} |"
+          echo "| Unit Tests | ${{ needs.test.result == 'success' && '✅ Passed' || '❌ Failed' }} |"
+          echo "| Deployment Ready | ${{ needs.test.result == 'success' && '✅ Yes' || '❌ No' }} |"
+          echo ""
+          
+          if [[ "${{ needs.validate.result }}" == "success" && "${{ needs.lint.result }}" == "success" && "${{ needs.test.result }}" == "success" ]]; then
+            echo "**Status:** ✅ All checks passed - Ready for deployment"
+          else
+            echo "**Status:** ❌ Some checks failed - Review errors above"
+          fi
+          
+          echo ""
+          echo "---"
+          echo ""
+          echo "**Note:** Tests run against local Supabase instance with migrations automatically applied."
+        } >> $GITHUB_STEP_SUMMARY
