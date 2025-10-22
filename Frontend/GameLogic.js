@@ -10,8 +10,8 @@ const game = {
 
 
 // Create a new active piece
-function spawnPiece(tetrominoKey) {
-    const tetromino = TETROMINOS[tetrominoKey];
+function spawnPiece(tetrominoKey) { 
+    const tetromino = TETROMINOS[tetrominoKey]; // 'T'
     game.activePiece = {
         shape: tetromino['shapes'],
         rot: 0,
@@ -19,24 +19,29 @@ function spawnPiece(tetrominoKey) {
         col: 3,
         id: tetromino['id']
     };
-}
 
-// Lock the active piece into the board
-function lockPiece() {
-    const piece = game.activePiece;
-    const currentShape = piece.shape[piece.rot];
-    
-    for (let r = 0; r < 4; r++) {
-        for (let c = 0; c < 4; c++) {
-            if (currentShape[r][c]) {
-                const boardRow = piece.row + r;
-                const boardCol = piece.col + c;
-                game.board[boardRow][boardCol] = piece.id;
+    if(game.activePiece != null)
+    {
+        // for (let i = 0; i < 20; i++) 
+        // { 
+        //     for (let j = 0; j < 10; j++) 
+        //     { // Inner loop for columns
+        //         if(game.board[i][j] == 1)
+        //             game.board[i][j] = 0;
+        //     }
+        // }
+        console.log(game.activePiece.shape[game.activePiece.rot]);
+        for (let i = 0; i < 4; i++) 
+        { 
+            for (let j = 0; j < 4; j++) 
+            { // Inner loop for columns
+                if (game.activePiece.shape[game.activePiece.rot][i][j] === 1)
+                {
+                    game.board[i + game.activePiece.row][j + game.activePiece.col] = 1;
+                }
             }
         }
     }
-    
-    game.activePiece = null;
 }
 
 // Rotate the active piece
@@ -56,50 +61,24 @@ function movePiece(deltaRow, deltaCol) {
 
 ///////////////////Testing//////////////////////
 function testPrintBoard() {
+    // console.log(game.board)
+
     console.log('=== TETRIS BOARD ===');
-    if(game.activePiece != null)
-    {
-        for (let i = 0; i < 20; i++) 
-        { 
-            for (let j = 0; j < 10; j++) 
-            { // Inner loop for columns
-                if(game.board[i][j] == 1)
-                    game.board[i][j] = 0;
-            }
-        }
-        for (let i = 0; i < 4; i++) 
-        { 
-            for (let j = 0; j < 4; j++) 
-            { // Inner loop for columns
-                if (game.activePiece.shape[game.activePiece.rot][i][j])
-                {
-                    game.board[i + game.activePiece.row][j + game.activePiece.col] = 1;
-                }
-            }
-        }
-    }
+    
 
     for(let i = 0; i < 20; i++)
     {
         console.log(game.board[i].toString());
     }
-//   console.log(game.board[2].toString());
+  console.log(game.board[2].toString());
   console.log('===================');
 }
 
 // Call it
-//testPrintBoard();
-spawnPiece('T');
 testPrintBoard();
-movePiece(5, 1);
+spawnPiece('J');
+testPrintBoard();
 
-testPrintBoard();
-rotatePiece();
-testPrintBoard();
-lockPiece();
-testPrintBoard();
-spawnPiece('T');
-testPrintBoard();
 
 
 ///////////////////Testing//////////////////////
