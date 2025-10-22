@@ -15,14 +15,14 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          
+          node-version: "20"
+
       - name: Check HTML syntax
         run: |
           if command -v tidy >/dev/null 2>&1; then
             tidy -q -e index.html || echo "HTML valid warnings"
           fi
-          
+
       - name: Syntax check all JS files
         run: |
           find . -name "*.js" -print0 | xargs -0 -n 1 node -c

@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   }
   const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
@@ -46,7 +46,7 @@ Deno.serve(async (req) => {
       {
         status: 400,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   }
 
@@ -90,7 +90,7 @@ Deno.serve(async (req) => {
       {
         status: 201,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   } catch (error) {
     // 7. Return clean error response
@@ -102,7 +102,7 @@ Deno.serve(async (req) => {
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   }
 });
