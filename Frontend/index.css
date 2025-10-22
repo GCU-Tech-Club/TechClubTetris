@@ -28,9 +28,12 @@ body {
     grid-template-rows: repeat(var(--rows), 1fr);
     gap: var(--gap);
     width: clamp(260px, 50vw, 520px);
-    aspect-ratio: 1 / 2;
+    height: clamp(400px, 90vh, 960px);
+    aspect-ratio: var(--cols) / var(--rows);
     box-shadow: 0 10px 30px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(255,255,255,0.04);
 }
+
+
 
 .cell { 
     background: var(--cell);
