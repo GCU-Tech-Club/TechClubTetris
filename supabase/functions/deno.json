@@ -1,5 +1,10 @@
 {
   "imports": {
-    "./_shared/functions/change-created-at.ts": "./_shared/functions/change-created-at.ts"
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@2",
+    "@supabase/functions-js": "jsr:@supabase/functions-js@2",
+    "@shared/": "./_shared/",
+    "@shared/types/": "./_shared/types/",
+    "@shared/functions/": "./_shared/functions/",
+    "std/": "https://deno.land/std@0.208.0/"
   }
 }

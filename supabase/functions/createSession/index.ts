@@ -3,9 +3,8 @@
 // This enables autocomplete, go to definition, etc.
 
 // Setup type definitions for built-in Supabase Runtime APIs
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "jsr:@supabase/supabase-js";
-// import { Session } from "@shared/types/session.ts";
+import "@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "@supabase/supabase-js";
 
 console.log("Hello from Functions!");
 
