@@ -95,6 +95,36 @@ export function rotatePiece() {
     }
 }
 
+export function shiftPieceDown()
+{
+    if(true) // <---**SOLIDIFY LOGIC HERE**
+    {
+        // Erase the current piece off the board (still exists in the activePiece var)
+        for(let i = 0; i < 20; i++)
+        {
+            for(let j = 0; j < 10; j++)
+            {
+                if(game.board[i][j] === 1)
+                    game.board[i][j] = 0;
+            }
+        }
+        // Increment the row to move the active piece down
+        game.activePiece.row++
+        
+        // Put the new piece on the board
+        for (let i = 0; i < 4; i++) 
+        { 
+            for (let j = 0; j < 4; j++) 
+            { 
+                if (game.activePiece.shape[game.activePiece.rot][i][j] === 1)
+                {
+                    game.board[i + game.activePiece.row][j + game.activePiece.col] = 1;
+                }
+            }
+        }
+    }
+}
+
 export function printBoard() {
     for(let i = 0; i < 20; i++)
     {
