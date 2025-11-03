@@ -102,3 +102,46 @@ export function printBoard() {
     }
     console.log(game.board[2].toString());
 }
+
+export function shiftLeft() {
+game.activePiece.col -= 1;
+// Erase the current piece off the board 
+for(let i = 0; i < 20; i++)
+    {
+        for(let j = 0; j < 10; j++)
+        {
+            if(game.board[i][j] === 1)
+                game.board[i][j] = 0;
+        }
+    }
+// Put the new piece on the board
+for (let i = 0; i < 4; i++)
+{
+    for (let j = 0; j < 4; j++)
+    {
+        if(game.activePiece.shape[game.activePiece.rot][i][j] === 1)
+        {
+            game.board[i + game.activePiece.row][j + game.activePiece.col] = 1;
+         }
+         }
+    }
+// Checks if the piece is to the edge it is going to stop shifting
+for(let k = 0; k < 20; k++)
+{
+    if(game.board[k][0] === 1)
+    {
+        brake;
+    }
+} 
+}
+
+
+console.log(game.board);
+spawnPiece('T');
+shiftLeft();
+shiftLeft();
+shiftLeft();
+shiftLeft();
+shiftLeft();
+shiftLeft();
+
