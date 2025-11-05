@@ -130,7 +130,7 @@ for(let k = 0; k < 20; k++)
 {
     if(game.board[k][0] === 1)
     {
-        brake;
+        break;
     }
 } 
 }
