@@ -4,8 +4,7 @@ import { create, getNumericDate, Header, Payload } from "djwt";
 
 serve(async (req) => {
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-  const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-  // Uses service role key for database operations and JWT minting
+  const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!; // Uses service role key for database operations and JWT minting
 
   if (!supabaseUrl || !supabaseServiceRoleKey) {
     return new Response(

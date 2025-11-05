@@ -1,9 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { isValidHighScore } from "@shared/functions/validate-high-score.ts";
 import { HighScore } from "@shared/types/highScore.ts";
-import { create, getNumericDate, Header, Payload, decode } from "djwt";
-
-
+import { decode } from "djwt";
 
 Deno.serve(async (req) => {
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -49,30 +47,41 @@ Deno.serve(async (req) => {
     );
   }
 
-  let token = req.headers.get("Authorization")?.split(" ")[1] || "";
-  console.log("Token:", token);
-    let userSessionId;
-  try {
-    userSessionId = decode(token);
-   const claims =  userSessionId[1] as Record<string, unknown>;
-   console.log("Claims:", claims);
-    if (!claims || !claims.sub) {
-      throw new Error("Invalid token claims");
+  // Validate Authorization header and decode JWT
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return new Response(
+      JSON.stringify({ error: "Missing or invalid Authorization header" }),
+      { status: 401, headers: { "Content-Type": "application/json" } }
+    );
   }
+
+  const token = authHeader.split(" ")[1];
+  if (!token) {
+    return new Response(
+      JSON.stringify({ error: "Token not found in Authorization header" }),
+      { status: 401, headers: { "Content-Type": "application/json" } }
+    );
+  }
+
+  try {
+    const decoded = decode(token);
+    const claims = decoded[1] as Record<string, unknown>;
+
+    if (!claims || !claims.sub) throw new Error("Invalid token claims");
+
     const sessionId = claims.session_id;
-    if (!sessionId) {
-      throw new Error("Session ID not found in token");
-    }
-    console.log("Session ID:", sessionId);
+
+    if (!sessionId) throw new Error("Session ID not found in token");
+
     const { data, error } = await supabase
       .from("sessions")
       .select("*")
       .eq("id", sessionId)
       .single();
-    if (error || !data) {
-      throw new Error("Session not found");
-    }
-    console.log("Session Data:", data);
+
+    if (error || !data) throw new Error("Session not found");
+
     // continue processing with valid sessionId
   } catch (error) {
     const errorMessage =
@@ -108,7 +117,7 @@ Deno.serve(async (req) => {
   // Handle error if database operation fails
   if (error) {
     return new Response(
-      JSON.stringify({ error: "Failed to save high score" + error.message }),
+      JSON.stringify({ error: "Failed to save high score: " + error.message }),
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
