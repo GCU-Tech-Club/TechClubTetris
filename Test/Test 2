@@ -1,2 +1,0 @@
-System.out.print("This is a test");
-System.out.print(" of special characters: %20 and spaces.");

@@ -2,7 +2,10 @@
   "imports": {
     "@shared/": "../_shared/",
     "@shared/types/": "../_shared/types/",
-    "@shared/functions/": "../_shared/functions/"
+    "@shared/functions/": "../_shared/functions/",
+    "supabase": "https://esm.sh/@supabase/supabase-js@2",
+    "server": "https://deno.land/std@0.168.0/http/server.ts",
+    "djwt": "https://deno.land/x/djwt@v3.0.2/mod.ts"
   },
   "tasks": {
     "test": "deno test --allow-net --allow-env",

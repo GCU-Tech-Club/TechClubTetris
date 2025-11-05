@@ -1,17 +1,11 @@
-// Follow this setup guide to integrate the Deno language server with your editor:
-// https://deno.land/manual/getting_started/setup_your_environment
-// This enables autocomplete, go to definition, etc.
+import { serve } from "server";
+import { createClient } from "supabase";
+import { create, getNumericDate, Header, Payload } from "djwt";
 
-// Setup type definitions for built-in Supabase Runtime APIs
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "jsr:@supabase/supabase-js";
-import { Session } from "@shared/types/session.ts";
-
-console.log("Hello from Functions!");
-
-Deno.serve(async (req) => {
+serve(async (req) => {
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  // Uses service role key for database operations and JWT minting
 
   if (!supabaseUrl || !supabaseServiceRoleKey) {
     return new Response(
@@ -26,8 +20,6 @@ Deno.serve(async (req) => {
   }
   const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
-  console.log(Deno.env.get("test_hello") || "no hello");
-
   // Validate request method
   if (req.method !== "POST") {
     return new Response(JSON.stringify({ error: "Method not allowed" }), {
@@ -36,56 +28,67 @@ Deno.serve(async (req) => {
     });
   }
 
-  // Parse and validate request body
-  let requestBody;
-  try {
-    requestBody = await req.json();
-  } catch (error) {
-    return new Response(
-      JSON.stringify({ error: "Invalid JSON body", details: error }),
-      {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
-  }
-
-  // Validate user_id
-  if (!requestBody.user_id) {
-    return new Response(JSON.stringify({ error: "user_id is required" }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-
-  if (typeof requestBody.user_id !== "string") {
-    return new Response(JSON.stringify({ error: "user_id must be a string" }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-
   // Generate unique session ID
   const sessionId = crypto.randomUUID();
 
-  // 5. Database operation with error handling
   try {
-    const { data, error } = await supabase.from("sessions").insert({
-      user_id: requestBody.user_id,
-      session_id: sessionId,
+    // Create session in database
+    const { error } = await supabase.from("sessions").insert({
+      id: sessionId,
       created_at: new Date(),
     });
 
-    if (error) {
-      throw error;
+    if (error) throw error;
+
+    // Mint custom JWT for session ID using djwt
+    // Get JWT secret from environment (use Supabase's JWT secret if available)
+    const jwtSecretString =
+      Deno.env.get("JWT_SECRET") ||
+      Deno.env.get("SUPABASE_JWT_SECRET") ||
+      "super-secret-jwt-token-with-at-least-32-characters-long";
+
+    if (!jwtSecretString || jwtSecretString.length < 32) {
+      throw new Error("JWT_SECRET must be at least 32 characters long");
     }
 
-    // 6. Return clean success response
+    // Convert secret string to CryptoKey for HS256 algorithm
+    const encoder = new TextEncoder();
+    const keyData = encoder.encode(jwtSecretString);
+    const jwtSecret = await crypto.subtle.importKey(
+      "raw",
+      keyData,
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"]
+    );
+
+    // Define JWT header
+    const header: Header = {
+      alg: "HS256",
+      typ: "JWT",
+    };
+
+    // Define JWT payload with Supabase-compatible format
+    const payload: Payload = {
+      iss: "supabase", // issuer
+      sub: sessionId, // subject (session ID as uid)
+      aud: "authenticated", // audience
+      exp: getNumericDate(60 * 60 * 24), // expires in 24 hours (in seconds)
+      iat: getNumericDate(new Date()), // issued at
+      role: "authenticated", // role
+      session_id: sessionId, // custom claim for easy session lookup
+    };
+
+    // Create and sign JWT
+    const jwt = await create(header, payload, jwtSecret);
+
+    // Return session data with JWT
     return new Response(
       JSON.stringify({
+        jwt: jwt,
         session_id: sessionId,
-        user_id: requestBody.user_id,
         created_at: new Date().toISOString(),
+        message: "Game session started successfully with JWT authentication",
       }),
       {
         status: 201,
@@ -93,11 +96,11 @@ Deno.serve(async (req) => {
       }
     );
   } catch (error) {
-    // 7. Return clean error response
+    const details = error instanceof Error ? error.message : String(error);
     return new Response(
       JSON.stringify({
-        error: "Failed to create session",
-        details: error.message,
+        error: "Failed to start game session",
+        details,
       }),
       {
         status: 500,
@@ -113,8 +116,7 @@ Deno.serve(async (req) => {
   2. Make an HTTP request:
 
   curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/createSession' \
-    --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0' \
+    --header 'Authorization: Bearer YOUR_ANON_KEY' \
     --header 'Content-Type: application/json' \
-    --data '{"name":"Functions"}'
-
+    --data '{}'
 */

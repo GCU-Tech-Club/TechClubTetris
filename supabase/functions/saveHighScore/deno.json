@@ -3,6 +3,7 @@
     "@supabase/supabase-js": "jsr:@supabase/supabase-js@2",
     "@shared/": "../_shared/",
     "@shared/types/": "../_shared/types/",
-    "@shared/functions/": "../_shared/functions/"
+    "@shared/functions/": "../_shared/functions/",
+    "djwt": "https://deno.land/x/djwt@v3.0.2/mod.ts"
   }
 }

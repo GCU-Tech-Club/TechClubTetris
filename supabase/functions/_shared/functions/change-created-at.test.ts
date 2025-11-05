@@ -1,12 +1,11 @@
-import { assertNotEquals } from "std/assert/mod.ts";
+import { assertNotEquals } from "https://deno.land/std@0.168.0/testing/asserts.ts";
 import { changeCreatedAt } from "./change-created-at.ts";
-import { Session } from "@shared/types/session.ts";
+import { Session } from "../types/session.ts";
 
 Deno.test("test changeCreatedAt", () => {
   const session: Session = {
-    user_id: "123",
-    session_id: "123",
-    created_at: new Date("2025-01-01 12:00:00 UTC"),
+    id: crypto.randomUUID(),
+    created_at: new Date(),
   };
   console.log(session);
   const sessionWithChangedCreatedAt = changeCreatedAt(session);

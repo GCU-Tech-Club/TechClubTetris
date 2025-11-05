@@ -1,5 +1,4 @@
 export type Session = {
-  user_id: string;
-  session_id: string;
+  id: string;
   created_at: Date;
 };
