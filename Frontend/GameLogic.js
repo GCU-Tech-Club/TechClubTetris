@@ -19,7 +19,7 @@ export function spawnPiece(tetrominoKey) {
     game.activePiece = {
         shape: tetromino['shapes'],
         rot: 0,
-        row: 16,
+        row: 0,
         col: 3,
         id: tetromino['id']
     };
