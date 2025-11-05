@@ -19,7 +19,7 @@ export function spawnPiece(tetrominoKey) {
     game.activePiece = {
         shape: tetromino['shapes'],
         rot: 0,
-        row: 0,
+        row: 16,
         col: 3,
         id: tetromino['id']
     };
@@ -50,79 +50,123 @@ export function spawnPiece(tetrominoKey) {
 
 // Change the active piece to the next rotation
 export function rotatePiece() {
-    // Erase the current piece off the board (still exists in the activePiece var)
-    for(let i = 0; i < 20; i++)
+  if (!game.activePiece) return;
+
+  // Erase current piece from the board
+  for (let i = 0; i < 4; i++) {
+    for (let j = 0; j < 4; j++) {
+      if (game.activePiece.shape[game.activePiece.rot][i][j] === 1) {
+        game.board[i + game.activePiece.row][j + game.activePiece.col] = 0;
+      }
+    }
+  }
+
+  const { row, col, shape } = game.activePiece;
+  const nextRot = (game.activePiece.rot + 1) % shape.length;
+
+  // Try shifts to try to rotate
+  const shifts = [0, -1, -2];
+
+  let appliedShift = null;
+  for (const shift of shifts) {
+    if (canPlace(shape[nextRot], row + shift, col)) {
+      game.activePiece.rot = nextRot;
+      game.activePiece.row = row + shift;
+      appliedShift = shift;
+      break;
+    }
+  }
+
+  // If rotation couldn't be applied, redraw original orientation and bail
+  if (appliedShift === null) {
+    for (let i = 0; i < 4; i++) {
+      for (let j = 0; j < 4; j++) {
+        if (shape[game.activePiece.rot][i][j] === 1) {
+          game.board[row + i][col + j] = 1;
+        }
+      }
+    }
+    return; // no rotation
+  }
+
+  // Draw rotated piece
+  for (let i = 0; i < 4; i++) {
+    for (let j = 0; j < 4; j++) {
+      if (shape[game.activePiece.rot][i][j] === 1) {
+        game.board[game.activePiece.row + i][game.activePiece.col + j] = 1;;
+      }
+    }
+  }
+}
+
+
+// Return true if a 4x4 shape can be placed at (row,col) fully in-bounds
+// and not overlapping any solidified cells (marked as 2).
+function canPlace(shape, row, col) {
+  for (let i = 0; i < 4; i++) {
+    for (let j = 0; j < 4; j++) {
+      if (shape[i][j] !== 1) continue;
+
+      const y = row + i;
+      const x = col + j;
+
+      // bounds
+      if (y < 0 || y >= 20 || x < 0 || x >= 10) return false;
+      // collision with solidified cells
+      if (game.board[y][x] !== 0) return false;
+    }
+  }
+  return true;
+}
+
+// Shift piece down
+export function shiftPieceDown()
+{
+    if (!game.activePiece) return;
+    
+    // If we should solidify, set the active piece to null
+    if(solidifyPiece()) 
     {
-        for(let j = 0; j < 10; j++)
-        {
-            if(game.board[i][j] === 1)
-                game.board[i][j] = 0;
+       game.activePiece = null; 
+       return;
+    }
+    // Move the piece down if we shouldn't solidify
+    // Erase the active piece off the board (still exists in the activePiece var)
+    for (let i = 0; i < 4; i++) {
+        for (let j = 0; j < 4; j++) {
+            if (game.activePiece.shape[game.activePiece.rot][i][j] === 1) game.board[game.activePiece.row + i][game.activePiece.col + j] = 0;
         }
     }
-
-    // Reset to first rotation if last, go to next rotation if not
-    if(game.activePiece.shape.length === 4)
-        if(game.activePiece.rot === 3)
-            game.activePiece.rot = 0;
-        else
-            // Else go to next rotation
-            game.activePiece.rot += 1;
-    if(game.activePiece.shape.length === 2)
-        if(game.activePiece.rot === 1)
-            game.activePiece.rot = 0;
-        else
-            // Else go to next rotation
-            game.activePiece.rot += 1;
-
-    // Out of bounds check (for now)
-    // If the rotation is able to go out of bounds
-    if(game.activePiece.shape.length === 4 && game.activePiece.rot === 1 || 3)
-    {
-        // If the rotated piece is out of bounds, move it back in (+3 is the width of the piece)
-        if(game.activePiece.col + 3 > 10)
-            col--
-    }
+    // Increment the row to move the active piece down
+    game.activePiece.row += 1;
+        
     // Put the new piece on the board
-    for (let i = 0; i < 4; i++) 
-    { 
-        for (let j = 0; j < 4; j++) 
-        { 
-            if (game.activePiece.shape[game.activePiece.rot][i][j] === 1)
-            {
-                game.board[i + game.activePiece.row][j + game.activePiece.col] = 1;
-            }
+    for (let i = 0; i < 4; i++) {
+        for (let j = 0; j < 4; j++) {
+            if (game.activePiece.shape[game.activePiece.rot][i][j] === 1) game.board[game.activePiece.row + i][game.activePiece.col + j] = 1;
         }
     }
 }
 
-export function shiftPieceDown()
-{
-    if(true) // <---**SOLIDIFY LOGIC HERE**
-    {
-        // Erase the current piece off the board (still exists in the activePiece var)
-        for(let i = 0; i < 20; i++)
-        {
-            for(let j = 0; j < 10; j++)
-            {
-                if(game.board[i][j] === 1)
-                    game.board[i][j] = 0;
-            }
-        }
-        // Increment the row to move the active piece down
-        game.activePiece.row++
-        
-        // Put the new piece on the board
-        for (let i = 0; i < 4; i++) 
-        { 
-            for (let j = 0; j < 4; j++) 
-            { 
-                if (game.activePiece.shape[game.activePiece.rot][i][j] === 1)
-                {
-                    game.board[i + game.activePiece.row][j + game.activePiece.col] = 1;
-                }
-            }
-        }
+// Checks if we should solidify piece, returns boolean
+export function solidifyPiece() {
+  const nextRow = game.activePiece.row + 1;
+
+  for (let i = 0; i < 4; i++) {
+    for (let j = 0; j < 4; j++) {
+      if (game.activePiece.shape[game.activePiece.rot][i][j] !== 1) continue;
+
+      const y = nextRow + i;
+      const x = game.activePiece.col + j;
+
+      // bounds first
+      if (y >= 20 || x < 0 || x >= 10) return true;
+
+      // collision with settled blocks (with your current single-layer board)
+      if (game.board[y][x] === 1) return true;
     }
+  }
+  return false; // safe to move down
 }
 
 export function printBoard() {
