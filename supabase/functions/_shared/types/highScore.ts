@@ -1,5 +1,6 @@
 export type HighScore = {
-  user_id: string;
+  uid: string;
+  initials: string;
   score: number;
   created_at: Date;
 };

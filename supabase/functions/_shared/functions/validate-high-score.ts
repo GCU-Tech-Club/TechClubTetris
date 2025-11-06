@@ -1,15 +1,19 @@
-import { HighScore } from "@shared/types/highScore.ts";
-
-type HighScoreRequest = Omit<HighScore, "created_at">;
+// Request body only contains initials and score (uid comes from JWT)
+type HighScoreRequest = {
+  initials: string;
+  score: number;
+};
 
 export function isValidHighScore(data: unknown): data is HighScoreRequest {
   if (!data || typeof data !== "object") return false;
 
-  const { user_id, score } = data as Record<string, unknown>;
+  const { initials, score } = data as Record<string, unknown>;
   return (
-    typeof user_id === "string" &&
+    typeof initials === "string" &&
+    initials.length === 3 &&
+    /^[A-Za-z0-9]{3}$/.test(initials) && // Exactly 3 alphanumeric characters
     typeof score === "number" &&
-    user_id.length > 0 &&
-    score >= 0
+    score >= 0 &&
+    Number.isInteger(score) // Ensure it's an integer
   );
 }
