@@ -1,7 +1,10 @@
-import { assertNotEquals } from "https://deno.land/std@0.168.0/testing/asserts.ts";
-import { changeCreatedAt } from "./change-created-at.ts";
-import { Session } from "../types/session.ts";
+import { assertNotEquals } from "std/assert/mod.ts";
+import { changeCreatedAt } from "./index.ts";
+import { Session } from "../../types/session.ts";
 
+/**
+ * Tests that the created_at timestamp of a session is updated
+ */
 Deno.test("should update session created_at timestamp", async () => {
   const session: Session = {
     id: crypto.randomUUID(),
