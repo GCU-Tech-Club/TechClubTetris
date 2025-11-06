@@ -8,7 +8,6 @@ import { createSupabaseClient } from "../utils/supabase.ts";
 
 /**
  * Authenticated request interface
- * @param sessionId Session ID
  */
 export interface AuthenticatedRequest {
   sessionId: string;

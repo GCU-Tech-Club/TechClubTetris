@@ -2,16 +2,9 @@ import { createSupabaseClient } from "../utils/supabase.ts";
 import { HighScore } from "../types/highScore.ts";
 
 /**
- * Score creation data
- * @param uid User ID
- * @param initials Initials
- * @param score Score
+ * Score creation data (HighScore without created_at, which is generated server-side)
  */
-export interface ScoreCreationData {
-  uid: string;
-  initials: string;
-  score: number;
-}
+export type ScoreCreationData = Omit<HighScore, "created_at">;
 
 /**
  * Retrieves the top N scores from the scores table

@@ -2,13 +2,7 @@ import { createClient, SupabaseClient } from "supabase";
 import { getSupabaseEnv } from "./env.ts";
 
 /**
- * Supabase client factory
- * Creates a Supabase client with service role key for database operations
- */
-
-/**
- * Supabase client
- * @type {SupabaseClient | null}
+ * Cached Supabase client instance
  */
 let supabaseClient: SupabaseClient | null = null;
 
