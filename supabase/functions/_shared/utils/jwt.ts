@@ -2,11 +2,6 @@ import { create, getNumericDate, Header, Payload, decode } from "djwt";
 import { getJwtSecret } from "./env.ts";
 
 /**
- * JWT utilities
- * Handles JWT token creation and validation
- */
-
-/**
  * Cache for JWT secret key to avoid repeated imports
  * @type {CryptoKey | null}
  */

@@ -2,11 +2,6 @@ import { decodeJwtToken, validateJwtClaims } from "../utils/jwt.ts";
 import { createSupabaseClient } from "../utils/supabase.ts";
 
 /**
- * Authentication middleware
- * Handles JWT token extraction and validation
- */
-
-/**
  * Authenticated request interface
  */
 export interface AuthenticatedRequest {
@@ -61,7 +56,6 @@ export async function authenticateRequest(
 ): Promise<AuthenticatedRequest> {
   try {
     const token = extractToken(req);
-
     const claims = decodeJwtToken(token);
     const sessionId = validateJwtClaims(claims);
 
@@ -73,7 +67,7 @@ export async function authenticateRequest(
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
 
-    // Return unauthorized response (will be handled by caller)
+    // Return unauthorized response (handled by caller)
     throw new Response(
       JSON.stringify({
         error: "Invalid token",
