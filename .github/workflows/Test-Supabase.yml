@@ -132,26 +132,6 @@ jobs:
           echo "Run 'deno lint' locally to see details"
         fi
 
-    - name: Auto-format and commit (main branch only)
-      if: failure() && github.ref == 'refs/heads/main' && github.event_name == 'push'
-      run: |
-        cd supabase/functions
-        
-        # Format the code
-        deno fmt .
-        
-        # Configure git
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        
-        # Commit if changes exist
-        if [ -n "$(git diff --name-only)" ]; then
-          git add .
-          git commit -m "🤖 Auto-format code with deno fmt"
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:${{ github.ref_name }}
-          echo "✅ Auto-formatted changes committed"
-        fi
-
   test:
     name: Build and Test
     needs: [validate]
