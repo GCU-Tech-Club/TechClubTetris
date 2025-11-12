@@ -1,5 +1,5 @@
+import type { HighScore } from "../types/highScore.ts";
 import { createSupabaseClient } from "../utils/supabase.ts";
-import { HighScore } from "../types/highScore.ts";
 
 /**
  * Score creation data (HighScore without created_at, which is generated server-side)
@@ -13,17 +13,17 @@ export type ScoreCreationData = Omit<HighScore, "created_at">;
  * @throws Error if database query fails
  */
 export async function getTopScores(limit: number = 10): Promise<HighScore[]> {
-  const supabase = createSupabaseClient();
+	const supabase = createSupabaseClient();
 
-  const { data, error } = await supabase
-    .from("scores")
-    .select("*")
-    .order("score", { ascending: false })
-    .limit(limit);
+	const { data, error } = await supabase
+		.from("scores")
+		.select("*")
+		.order("score", { ascending: false })
+		.limit(limit);
 
-  if (error) throw new Error(`Failed to retrieve scores: ${error.message}`);
+	if (error) throw new Error(`Failed to retrieve scores: ${error.message}`);
 
-  return (data || []) as HighScore[];
+	return (data || []) as HighScore[];
 }
 
 /**
@@ -33,24 +33,24 @@ export async function getTopScores(limit: number = 10): Promise<HighScore[]> {
  * @throws Error if database operation fails
  */
 export async function saveScore(
-  scoreData: ScoreCreationData
+	scoreData: ScoreCreationData,
 ): Promise<HighScore> {
-  const supabase = createSupabaseClient();
+	const supabase = createSupabaseClient();
 
-  const score: Omit<HighScore, "id"> = {
-    uid: scoreData.uid,
-    initials: scoreData.initials,
-    score: scoreData.score,
-    created_at: new Date(),
-  };
+	const score: Omit<HighScore, "id"> = {
+		uid: scoreData.uid,
+		initials: scoreData.initials,
+		score: scoreData.score,
+		created_at: new Date(),
+	};
 
-  const { data, error } = await supabase
-    .from("scores")
-    .insert(score)
-    .select()
-    .single();
+	const { data, error } = await supabase
+		.from("scores")
+		.insert(score)
+		.select()
+		.single();
 
-  if (error) throw new Error(`Failed to save score: ${error.message}`);
+	if (error) throw new Error(`Failed to save score: ${error.message}`);
 
-  return data as HighScore;
+	return data as HighScore;
 }

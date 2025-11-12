@@ -1,30 +1,11 @@
-import { decodeJwtToken, validateJwtClaims } from "../utils/jwt.ts";
+import { decodeJwtToken, extractSessionIdFromClaims } from "../utils/jwt.ts";
 import { createSupabaseClient } from "../utils/supabase.ts";
 
 /**
  * Authenticated request interface
  */
 export interface AuthenticatedRequest {
-  sessionId: string;
-}
-
-/**
- * Extracts JWT token from Authorization header
- * @param req Request object
- * @returns JWT token string
- * @throws Error if token is missing or invalid format
- */
-function extractToken(req: Request): string {
-  const authHeader = req.headers.get("Authorization");
-
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    throw new Error("Missing or invalid Authorization header");
-  }
-
-  const token = authHeader.split(" ")[1];
-  if (!token) throw new Error("Token not found in Authorization header");
-
-  return token;
+	sessionId: string;
 }
 
 /**
@@ -33,50 +14,57 @@ function extractToken(req: Request): string {
  * @returns void
  * @throws Error if session doesn't exist
  */
-async function validateSessionExists(sessionId: string): Promise<void> {
-  const supabase = createSupabaseClient();
+export async function validateSessionExists(
+	sessionId: string,
+): Promise<boolean> {
+	const supabase = createSupabaseClient();
 
-  const { data, error } = await supabase
-    .from("sessions")
-    .select("*")
-    .eq("id", sessionId)
-    .single();
+	const { data, error } = await supabase
+		.from("sessions")
+		.select("*")
+		.eq("id", sessionId)
+		.single();
 
-  if (error || !data) throw new Error("Session not found");
+	if (error || !data) return false;
+
+	return true;
 }
 
 /**
  * Authenticates a request by extracting and validating JWT token
  * @param req Request object
- * @returns Authenticated request with sessionId
+ * @returns Session ID
  * @throws Response if authentication fails (to be caught by caller)
  */
-export async function authenticateRequest(
-  req: Request
-): Promise<AuthenticatedRequest> {
-  try {
-    const token = extractToken(req);
-    const claims = decodeJwtToken(token);
-    const sessionId = validateJwtClaims(claims);
+export async function authenticateSession(
+	sessionToken: string,
+): Promise<string> {
+	try {
+		const claims = decodeJwtToken(sessionToken);
+		const sessionId = extractSessionIdFromClaims(claims);
 
-    // Validate session exists in database
-    await validateSessionExists(sessionId);
+		// Validate session exists in database
+		const isValid = await validateSessionExists(sessionId);
 
-    return { sessionId };
-  } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
+		if (!isValid) {
+			throw new Error("Session not found");
+		}
 
-    // Return unauthorized response (handled by caller)
-    throw new Response(
-      JSON.stringify({
-        error: "Invalid token",
-        details: errorMessage,
-      }),
-      {
-        status: 401,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
-  }
+		return sessionId;
+	} catch (error) {
+		const errorMessage =
+			error instanceof Error ? error.message : "Unknown error";
+
+		// Return unauthorized response (handled by caller)
+		throw new Response(
+			JSON.stringify({
+				error: "Invalid token",
+				details: errorMessage,
+			}),
+			{
+				status: 401,
+				headers: { "Content-Type": "application/json" },
+			},
+		);
+	}
 }

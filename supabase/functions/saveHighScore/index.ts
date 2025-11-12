@@ -1,5 +1,5 @@
 import { isValidHighScore } from "@shared/functions/validate-high-score/index.ts";
-import { authenticateRequest } from "@shared/middleware/auth.ts";
+import { authenticateSession } from "@shared/middleware/auth.ts";
 import { saveScore } from "@shared/services/score.ts";
 import { isMethod, parseJsonBody } from "@shared/utils/request.ts";
 import {
@@ -18,18 +18,19 @@ serve(async (req: Request) => {
 	// Handle POST request - save high score
 	if (isMethod(req, "POST")) {
 		try {
+			const sessionToken = req.headers.get("X-Session-Id");
+			if (!sessionToken) {
+				return badRequest("Missing X-Session-Id header");
+			}
+
+			const sessionId = await authenticateSession(sessionToken);
+
+			if (!sessionId) {
+				return badRequest("Invalid session");
+			}
+
 			// Parse request body
 			const requestBody = await parseJsonBody(req);
-
-			// Authenticate request (extracts and validates JWT)
-			let authResult;
-			try {
-				authResult = await authenticateRequest(req);
-			} catch (error) {
-				// authenticateRequest throws a Response object on failure
-				if (error instanceof Response) return error;
-				throw error;
-			}
 
 			// Validate high score data
 			if (!isValidHighScore(requestBody)) {
@@ -41,7 +42,7 @@ serve(async (req: Request) => {
 
 			// Save score using service layer
 			const savedScore = await saveScore({
-				uid: authResult.sessionId,
+				uid: sessionId,
 				initials: body.initials,
 				score: body.score,
 			});
