@@ -1,0 +1,8 @@
+{
+  "imports": {
+    "@shared/": "./_shared/",
+    "@shared/types/": "./_shared/types/",
+    "@shared/functions/": "./_shared/functions/",
+    "std/": "https://deno.land/std@0.208.0/"
+  }
+}
