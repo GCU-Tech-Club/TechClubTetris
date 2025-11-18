@@ -7,6 +7,7 @@ import {
 	jsonResponse,
 	methodNotAllowed,
 } from "@shared/utils/response.ts";
+import { getCookies } from "cookie";
 import { serve } from "server";
 
 /**
@@ -19,12 +20,15 @@ serve(async (req: Request) => {
 
 	// Handle GET request - retrieve top 10 high scores
 	try {
-		const sessionId = req.headers.get("X-Session-Id");
-		if (!sessionId) {
-			return badRequest("Missing X-Session-Id header");
+		// Extract session JWT from cookies
+		const cookies = getCookies(req.headers);
+		const sessionToken = cookies.session;
+
+		if (!sessionToken) {
+			return badRequest("Missing session cookie");
 		}
 
-		if (!authenticateSession(sessionId)) {
+		if (!authenticateSession(sessionToken)) {
 			return badRequest("Invalid session");
 		}
 		const scores = await getTopScores(10);

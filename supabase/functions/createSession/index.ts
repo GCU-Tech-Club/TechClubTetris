@@ -22,12 +22,15 @@ serve(async (req: Request) => {
     // Return session data with JWT
     return jsonResponse(
       {
-        jwt: session.jwt,
+        // jwt: session.jwt,
         session_id: session.sessionId,
         created_at: session.createdAt.toISOString(),
         message: "Game session started successfully with JWT authentication",
       },
-      201
+      201,
+      {
+        "Set-Cookie": `session=${session.jwt}; Path=/; SameSite=Strict; Secure; HttpOnly`,
+      }
     );
   } catch (error) {
     const details = error instanceof Error ? error.message : String(error);

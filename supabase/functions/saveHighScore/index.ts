@@ -8,6 +8,7 @@ import {
 	jsonResponse,
 	methodNotAllowed,
 } from "@shared/utils/response.ts";
+import { getCookies } from "cookie";
 import { serve } from "server";
 
 /**
@@ -18,9 +19,12 @@ serve(async (req: Request) => {
 	// Handle POST request - save high score
 	if (isMethod(req, "POST")) {
 		try {
-			const sessionToken = req.headers.get("X-Session-Id");
+			// Extract session JWT from cookies
+            const cookies = getCookies(req.headers);
+            const sessionToken = cookies.session;
+
 			if (!sessionToken) {
-				return badRequest("Missing X-Session-Id header");
+				return badRequest("Missing session cookie");
 			}
 
 			const sessionId = await authenticateSession(sessionToken);
