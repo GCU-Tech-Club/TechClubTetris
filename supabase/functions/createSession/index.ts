@@ -6,6 +6,7 @@ import {
   jsonResponse,
   internalServerError,
 } from "@shared/utils/response.ts";
+import { setCookie } from "cookie";
 
 /**
  * Create Session Edge Function
@@ -19,6 +20,19 @@ serve(async (req: Request) => {
     // Create session using service layer
     const session = await createSessionService();
 
+    // Create response headers
+    const responseHeaders = new Headers();
+
+    // Create cookie for response
+    setCookie(responseHeaders, {
+      name: "session",
+      value: session.jwt,
+      path: "/",
+      sameSite: "Strict",
+      secure: true,
+      httpOnly: true,
+    })
+
     // Return session data with JWT
     return jsonResponse(
       {
@@ -28,9 +42,10 @@ serve(async (req: Request) => {
         message: "Game session started successfully with JWT authentication",
       },
       201,
-      {
-        "Set-Cookie": `session=${session.jwt}; Path=/; SameSite=Strict; Secure; HttpOnly`,
-      }
+      responseHeaders,
+    //   {
+    //     "Set-Cookie": `session=${session.jwt}; Path=/; SameSite=Strict; Secure; HttpOnly`,
+    //   }
     );
   } catch (error) {
     const details = error instanceof Error ? error.message : String(error);
