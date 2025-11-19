@@ -26,14 +26,6 @@ export function spawnPiece(tetrominoKey) {
 
     if(game.activePiece != null)
     {
-        // for (let i = 0; i < 20; i++) 
-        // { 
-        //     for (let j = 0; j < 10; j++) 
-        //     { // Inner loop for columns
-        //         if(game.board[i][j] == 1)
-        //             game.board[i][j] = 0;
-        //     }
-        // }
         console.log(game.activePiece.shape[game.activePiece.rot]);
         for (let i = 0; i < 4; i++) 
         { 
@@ -123,20 +115,28 @@ function canPlace(shape, row, col) {
 export function shiftPieceDown()
 {
     if (!game.activePiece) return;
-    
-    // If we should solidify, set the active piece to null
-    if(solidifyPiece()) 
-    {
-       game.activePiece = null; 
-       return;
-    }
-    // Move the piece down if we shouldn't solidify
+      
     // Erase the active piece off the board (still exists in the activePiece var)
     for (let i = 0; i < 4; i++) {
         for (let j = 0; j < 4; j++) {
             if (game.activePiece.shape[game.activePiece.rot][i][j] === 1) game.board[game.activePiece.row + i][game.activePiece.col + j] = 0;
         }
     }
+
+    // If we should solidify, set the active piece to null
+    if(solidifyPiece()) 
+    {
+      // Put the new piece on the board where it currently is
+      for (let i = 0; i < 4; i++) {
+          for (let j = 0; j < 4; j++) {
+              if (game.activePiece.shape[game.activePiece.rot][i][j] === 1) game.board[game.activePiece.row + i][game.activePiece.col + j] = 1;
+          }
+      }
+       game.activePiece = null; 
+       return;
+    }
+
+    // Move the piece down if we shouldn't solidify   
     // Increment the row to move the active piece down
     game.activePiece.row += 1;
         
@@ -151,7 +151,6 @@ export function shiftPieceDown()
 // Checks if we should solidify piece, returns boolean
 export function solidifyPiece() {
   const nextRow = game.activePiece.row + 1;
-
   for (let i = 0; i < 4; i++) {
     for (let j = 0; j < 4; j++) {
       if (game.activePiece.shape[game.activePiece.rot][i][j] !== 1) continue;
