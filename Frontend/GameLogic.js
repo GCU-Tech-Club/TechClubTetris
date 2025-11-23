@@ -92,37 +92,38 @@ export function printBoard() {
 }
 
 export function shiftLeft() {
-    game.activePiece.col -= 1;
+    let isAgainstEdge = false;
+
+    if ((game.activePiece.col === 0) || (game.activePiece.col === 9)) {
+            isAgainstEdge = true;
+            return;
+        }
+
     // Erase the current piece off the board 
-    for (let i = 0; i < 20; i++) {
-        for (let j = 0; j < 10; j++) {
-            if (game.board[i][j] === 1)
-                game.board[i][j] = 0;
+    for (let i = 0; i < 4; i++) {
+        for (let j = 0; j < 4; j++) {
+            if (game.activePiece.shape[game.activePiece.rot][i][j] === 1)
+                game.board[i+ game.activePiece.row][j + game.activePiece.col] = 0;
         }
     }
-    // Put the new piece on the board
-    for (let i = 0; i < 4; i++) {
+
+    if(!isAgainstEdge)
+    {
+        game.activePiece.col -= 1;
+        for (let i = 0; i < 4; i++) {
         for (let j = 0; j < 4; j++) {
             if (game.activePiece.shape[game.activePiece.rot][i][j] === 1) {
                 game.board[i + game.activePiece.row][j + game.activePiece.col] = 1;
             }
         }
     }
-    // Checks if the piece is to the edge it is going to stop shifting
-    for (let k = 0; k < 20; k++) {
-        if (game.board[k][0] === 1) {
-            break;
-        }
     }
+    // Put the new piece on the board
+
+    
+    // Checks if the piece is to the edge it is going to stop shifting
+    
 }
 
-
 console.log(game.board);
-spawnPiece('T');
-shiftLeft();
-shiftLeft();
-shiftLeft();
-shiftLeft();
-shiftLeft();
-shiftLeft();
 
