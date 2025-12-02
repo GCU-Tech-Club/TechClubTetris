@@ -27,6 +27,14 @@ export async function validateSessionExists(
 
 	if (error || !data) return false;
 
+	// Check if session is expired
+	const sessionAge = Date.now() - new Date(data.created_at).getTime();
+	const maxAge = 24 * 60 * 60 * 1000; // 24 hours
+
+	if (sessionAge > maxAge) {
+		return false; // Session expired
+	}
+
 	return true;
 }
 
