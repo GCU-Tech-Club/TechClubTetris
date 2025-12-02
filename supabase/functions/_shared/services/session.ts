@@ -1,6 +1,5 @@
 import { createSupabaseClient } from "../utils/supabase.ts";
 import { createJwtToken } from "../utils/jwt.ts";
-import { Session } from "../types/session.ts";
 
 /**
  * Session creation result
@@ -42,24 +41,4 @@ export async function createSession(): Promise<SessionCreationResult> {
     jwt,
     createdAt: new Date(),
   };
-}
-
-/**
- * Validates that a session exists in the database
- * @param sessionId Session ID to validate
- * @returns Session data if found
- * @throws Error if session doesn't exist
- */
-export async function validateSession(sessionId: string): Promise<Session> {
-  const supabase = createSupabaseClient();
-
-  const { data, error } = await supabase
-    .from("sessions")
-    .select("*")
-    .eq("id", sessionId)
-    .single();
-
-  if (error || !data) throw new Error("Session not found");
-
-  return data as Session;
 }
