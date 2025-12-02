@@ -16,9 +16,19 @@ export function jsonResponse(
   status: number = 200,
   headers: HeadersInit = {}
 ): Response {
+  // If headers is a Headers object, set Content-Type on it
+  if (headers instanceof Headers) {
+    headers.set("Content-Type", "application/json");
+    return new Response(JSON.stringify(data), {
+      status,
+      headers,
+    });
+  }
+
+  // Otherwise merge with Content-Type for plain objects/arrays
   return new Response(JSON.stringify(data), {
     status,
-    headers: { ...JSON_HEADERS, ...headers },
+    headers: { "Content-Type": "application/json", ...headers },
   });
 }
 
