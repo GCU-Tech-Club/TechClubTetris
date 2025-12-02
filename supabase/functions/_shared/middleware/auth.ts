@@ -5,7 +5,7 @@ import { createSupabaseClient } from "../utils/supabase.ts";
  * Authenticated request interface
  */
 export interface AuthenticatedRequest {
-	sessionId: string;
+  sessionId: string;
 }
 
 /**
@@ -15,17 +15,17 @@ export interface AuthenticatedRequest {
  * @throws Error if session doesn't exist
  */
 export async function validateSessionExists(
-	sessionId: string,
+  sessionId: string
 ): Promise<boolean> {
-	const supabase = createSupabaseClient();
+  const supabase = createSupabaseClient();
 
-	const { data, error } = await supabase
-		.from("sessions")
-		.select("*")
-		.eq("id", sessionId)
-		.single();
+  const { data, error } = await supabase
+    .from("sessions")
+    .select("*")
+    .eq("id", sessionId)
+    .single();
 
-	if (error || !data) return false;
+  if (error || !data) return false;
 
 	// Check if session is expired
 	const sessionAge = Date.now() - new Date(data.created_at).getTime();
@@ -45,34 +45,32 @@ export async function validateSessionExists(
  * @throws Response if authentication fails (to be caught by caller)
  */
 export async function authenticateSession(
-	sessionToken: string,
+  sessionToken: string
 ): Promise<string> {
-	try {
-		const claims = decodeJwtToken(sessionToken);
-		const sessionId = extractSessionIdFromClaims(claims);
+  try {
+    const claims = decodeJwtToken(sessionToken);
+    const sessionId = extractSessionIdFromClaims(claims);
 
-		// Validate session exists in database
-		const isValid = await validateSessionExists(sessionId);
+    // Validate session exists in database
+    const isValid = await validateSessionExists(sessionId);
 
-		if (!isValid) {
-			throw new Error("Session not found");
-		}
+    if (!isValid) throw new Error("Session not found");
 
-		return sessionId;
-	} catch (error) {
-		const errorMessage =
-			error instanceof Error ? error.message : "Unknown error";
+    return sessionId;
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
 
-		// Return unauthorized response (handled by caller)
-		throw new Response(
-			JSON.stringify({
-				error: "Invalid token",
-				details: errorMessage,
-			}),
-			{
-				status: 401,
-				headers: { "Content-Type": "application/json" },
-			},
-		);
-	}
+    // Return unauthorized response (handled by caller)
+    throw new Response(
+      JSON.stringify({
+        error: "Invalid token",
+        details: errorMessage,
+      }),
+      {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
 }

@@ -1,9 +1,9 @@
 import {
-	create,
-	decode,
-	getNumericDate,
-	type Header,
-	type Payload,
+  create,
+  decode,
+  getNumericDate,
+  type Header,
+  type Payload,
 } from "djwt";
 import { getJwtSecret } from "./env.ts";
 
@@ -20,22 +20,22 @@ let jwtSecretKey: CryptoKey | null = null;
  * @throws Error if JWT secret key is not found
  */
 async function getJwtSecretKey(): Promise<CryptoKey> {
-	if (jwtSecretKey) return jwtSecretKey;
+  if (jwtSecretKey) return jwtSecretKey;
 
-	const jwtSecretString = getJwtSecret();
+  const jwtSecretString = getJwtSecret();
 
-	// Convert secret string to CryptoKey for HS256 algorithm
-	const encoder = new TextEncoder();
-	const keyData = encoder.encode(jwtSecretString);
-	jwtSecretKey = await crypto.subtle.importKey(
-		"raw",
-		keyData,
-		{ name: "HMAC", hash: "SHA-256" },
-		false,
-		["sign"],
-	);
+  // Convert secret string to CryptoKey for HS256 algorithm
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(jwtSecretString);
+  jwtSecretKey = await crypto.subtle.importKey(
+    "raw",
+    keyData,
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
 
-	return jwtSecretKey;
+  return jwtSecretKey;
 }
 
 /**
@@ -45,14 +45,14 @@ async function getJwtSecretKey(): Promise<CryptoKey> {
  * @throws Error if claims are invalid
  */
 export function extractSessionIdFromClaims(
-	claims: Record<string, unknown>,
+  claims: Record<string, unknown>
 ): string {
-	if (!claims || !claims.sub) throw new Error("Invalid token claims");
+  if (!claims || !claims.sub) throw new Error("Invalid token claims");
 
-	const sessionId = claims.session_id as string;
-	if (!sessionId) throw new Error("Session ID not found in token");
+  const sessionId = claims.session_id as string;
+  if (!sessionId) throw new Error("Session ID not found in token");
 
-	return sessionId;
+  return sessionId;
 }
 
 /**
@@ -62,15 +62,15 @@ export function extractSessionIdFromClaims(
  * @throws Error if token is invalid
  */
 export function decodeJwtToken(token: string): Record<string, unknown> {
-	try {
-		const decoded = decode(token);
-		const claims = decoded[1] as Record<string, unknown>;
-		return claims;
-	} catch (error) {
-		const errorMessage =
-			error instanceof Error ? error.message : "Unknown error";
-		throw new Error(`Invalid token: ${errorMessage}`);
-	}
+  try {
+    const decoded = decode(token);
+    const claims = decoded[1] as Record<string, unknown>;
+    return claims;
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+    throw new Error(`Invalid token: ${errorMessage}`);
+  }
 }
 
 /**
@@ -80,41 +80,41 @@ export function decodeJwtToken(token: string): Record<string, unknown> {
  * @returns Signed JWT token string
  */
 export async function createJwtToken(
-	sessionId: string,
-	expiresInSeconds: number = 60 * 60 * 24, // 24 hours
+  sessionId: string,
+  expiresInSeconds: number = 60 * 60 * 24 // 24 hours
 ): Promise<string> {
-	const jwtSecret = await getJwtSecretKey();
+  const jwtSecret = await getJwtSecretKey();
 
-	/**
-	 * JWT header
-	 * @type {Header}
-	 */
-	const header: Header = {
-		alg: "HS256",
-		typ: "JWT",
-	};
+  /**
+   * JWT header
+   * @type {Header}
+   */
+  const header: Header = {
+    alg: "HS256",
+    typ: "JWT",
+  };
 
-	/**
-	 * JWT payload
-	 * @type {Payload}
-	 */
-	const payload: Payload = {
-		iss: "supabase", // issuer
-		sub: sessionId, // subject (session ID as uid)
-		aud: "authenticated", // audience
-		exp: getNumericDate(expiresInSeconds), // expires in specified seconds
-		iat: getNumericDate(new Date()), // issued at
-		role: "authenticated", // role
-		session_id: sessionId, // custom claim for easy session lookup
-	};
+  /**
+   * JWT payload
+   * @type {Payload}
+   */
+  const payload: Payload = {
+    iss: "supabase", // issuer
+    sub: sessionId, // subject (session ID as uid)
+    aud: "authenticated", // audience
+    exp: getNumericDate(expiresInSeconds), // expires in specified seconds
+    iat: getNumericDate(new Date()), // issued at
+    role: "authenticated", // role
+    session_id: sessionId, // custom claim for easy session lookup
+  };
 
-	/**
-	 * Creates and signs JWT token
-	 * @param header JWT header
-	 * @param payload JWT payload
-	 * @param jwtSecret JWT secret key
-	 * @returns Signed JWT token string
-	 */
-	const jwt = await create(header, payload, jwtSecret);
-	return jwt;
+  /**
+   * Creates and signs JWT token
+   * @param header JWT header
+   * @param payload JWT payload
+   * @param jwtSecret JWT secret key
+   * @returns Signed JWT token string
+   */
+  const jwt = await create(header, payload, jwtSecret);
+  return jwt;
 }
