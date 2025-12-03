@@ -9,18 +9,18 @@ import { serve } from "server";
  * Handles POST (save new score) requests
  */
 serve(async (req: Request) => {
-	// Handle POST request - save high score
-	if (isMethod(req, "POST")) {
-		// Extract session JWT from cookies
-		const cookies = getCookies(req.headers);
-		const sessionToken = cookies.session;
+  // Handle POST request - save high score
+  if (isMethod(req, "POST")) {
+    // Extract session JWT from cookies
+    const cookies = getCookies(req.headers);
+    const sessionToken = cookies.session;
 
-		// Parse request body
-		const requestBody = await parseJsonBody(req);
+    // Parse request body
+    const requestBody = await parseJsonBody(req);
 
-		// Call handler with extracted data
-		return await handleSaveHighScore(sessionToken, requestBody);
-	}
-	// Handle unsupported methods
-	return methodNotAllowed();
+    // Call handler with extracted data
+    return await handleSaveHighScore(sessionToken, requestBody);
+  }
+  // Handle unsupported methods
+  return methodNotAllowed();
 });
