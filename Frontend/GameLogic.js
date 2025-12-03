@@ -175,3 +175,37 @@ export function printBoard() {
     }
     console.log(game.board[2].toString());
 }
+
+export function shiftRight() {
+    let pieceLength = 0;
+    const lenghts = game.activePiece.shape[game.activePiece.rot].map(row => row.filter(num => num === 1).length);
+    pieceLength =Math.max(...lenghts);
+
+    let isAgainstEdge = false;
+
+    if ((game.activePiece.col === 0) || (game.activePiece.col + pieceLength - 1 === 9)) {
+            isAgainstEdge = true;
+            return;
+        }
+
+    // Erase the current piece off the board 
+    for (let i = 0; i < 4; i++) {
+        for (let j = 0; j < 4; j++) {
+            if (game.activePiece.shape[game.activePiece.rot][i][j] === 1)
+                game.board[i+ game.activePiece.row][j + game.activePiece.col] = 0;
+        }
+    }
+
+    if(!isAgainstEdge)
+    {
+        game.activePiece.col += 1;
+        for (let i = 0; i < 4; i++) {
+        for (let j = 0; j < 4; j++) {
+            if (game.activePiece.shape[game.activePiece.rot][i][j] === 1) {
+                game.board[i + game.activePiece.row][j + game.activePiece.col] = 1;
+            }
+        }
+    }
+}
+}
+  console.log(game.board);
