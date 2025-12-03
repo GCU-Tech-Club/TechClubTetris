@@ -4,17 +4,16 @@ console.log("this is where the board goes");
 console.log(TETROMINOS);
 // Game state
 export const game = {
-  board: Array.from({ length: 20 }, () => Array(10).fill(0)),
-  activePiece: null
+    board: Array.from({ length: 20 }, () => Array(10).fill(0)),
+    activePiece: null
 };
 
-export function getGameState()
-{
+export function getGameState() {
     return game;
 }
 
 // Create a new active piece
-export function spawnPiece(tetrominoKey) { 
+export function spawnPiece(tetrominoKey) {
     const tetromino = TETROMINOS[tetrominoKey]; // 'T'
     game.activePiece = {
         shape: tetromino['shapes'],
@@ -27,12 +26,9 @@ export function spawnPiece(tetrominoKey) {
     if(game.activePiece != null)
     {
         console.log(game.activePiece.shape[game.activePiece.rot]);
-        for (let i = 0; i < 4; i++) 
-        { 
-            for (let j = 0; j < 4; j++) 
-            { // Inner loop for columns
-                if (game.activePiece.shape[game.activePiece.rot][i][j] === 1)
-                {
+        for (let i = 0; i < 4; i++) {
+            for (let j = 0; j < 4; j++) { // Inner loop for columns
+                if (game.activePiece.shape[game.activePiece.rot][i][j] === 1) {
                     game.board[i + game.activePiece.row][j + game.activePiece.col] = 1;
                 }
             }
@@ -169,9 +165,45 @@ export function solidifyPiece() {
 }
 
 export function printBoard() {
-    for(let i = 0; i < 20; i++)
-    {
+    for (let i = 0; i < 20; i++) {
         console.log(game.board[i].toString());
     }
     console.log(game.board[2].toString());
 }
+
+export function shiftLeft() {
+    let isAgainstEdge = false;
+
+    if ((game.activePiece.col === 0) || (game.activePiece.col === 9)) {
+            isAgainstEdge = true;
+            return;
+        }
+
+    // Erase the current piece off the board 
+    for (let i = 0; i < 4; i++) {
+        for (let j = 0; j < 4; j++) {
+            if (game.activePiece.shape[game.activePiece.rot][i][j] === 1)
+                game.board[i+ game.activePiece.row][j + game.activePiece.col] = 0;
+        }
+    }
+
+    if(!isAgainstEdge)
+    {
+        game.activePiece.col -= 1;
+        for (let i = 0; i < 4; i++) {
+        for (let j = 0; j < 4; j++) {
+            if (game.activePiece.shape[game.activePiece.rot][i][j] === 1) {
+                game.board[i + game.activePiece.row][j + game.activePiece.col] = 1;
+            }
+        }
+    }
+    }
+    // Put the new piece on the board
+
+    
+    // Checks if the piece is to the edge it is going to stop shifting
+    
+}
+
+console.log(game.board);
+
