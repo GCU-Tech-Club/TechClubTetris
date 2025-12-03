@@ -13,6 +13,7 @@ import {
  */
 export async function handleGetHighScores(
 	sessionToken: string | undefined,
+    page: number
 ): Promise<Response> {
 	try {
 		if (!sessionToken) {
@@ -21,7 +22,9 @@ export async function handleGetHighScores(
 
 		await authenticateSession(sessionToken);
 
-		const scores = await getTopScores(10);
+        const from = (page - 1) * 10;
+        const to = from + 9;
+		const scores = await getTopScores(from, to);
 		return jsonResponse({ data: scores });
 	} catch (error) {
 		// Handle Response objects thrown by authenticateSession

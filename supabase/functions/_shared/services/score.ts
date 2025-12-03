@@ -12,14 +12,14 @@ export type ScoreCreationData = Omit<HighScore, "created_at">;
  * @returns Array of scores ordered by score descending
  * @throws Error if database query fails
  */
-export async function getTopScores(limit: number = 10): Promise<HighScore[]> {
+export async function getTopScores(from: number, to: number): Promise<HighScore[]> {
   const supabase = createSupabaseClient();
 
   const { data, error } = await supabase
     .from("scores")
     .select("*")
     .order("score", { ascending: false })
-    .limit(limit);
+    .range(from, to);
 
   if (error) throw new Error(`Failed to retrieve scores: ${error.message}`);
 
