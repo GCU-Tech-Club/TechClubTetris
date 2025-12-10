@@ -1,13 +1,20 @@
-<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Tetris</title>
+    <link rel="stylesheet" href="index.css" />
+    <script src="main.js" defer></script>
+    <script type="module" src="GameLoop.js"></script>
+    <script type="module" src="EventListeners.js"></script>
   </head>
   <body>
-    <script type="module" src="GameLoop.js"></script>
-    <script type="module" src="GamLogic.js"></script>
-    <h1>Hey</h1>
+    <h1 class="title">TECH CLUB TETRIS</h1>
+    <div class="game-container">
+      <div id="score-box" class="score-box">SCORE</div>
+      <div id="time=box" class="time-box">TIME</div>
+      <div id="board" class="board" aria-label="Playfield" role="grid"></div>
+      <div id="next-peice-box" class="next-peice-box">NEXT</div>
+    </div>
   </body>
 </html>
