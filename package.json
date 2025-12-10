@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "supabase": "^2.54.11",
+    "typescript": "^5.9.3"
+  },
+  "devDependencies": {
+    "deno": "^2.5.5"
+  }
+}
