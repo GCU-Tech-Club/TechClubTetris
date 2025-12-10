@@ -35,3 +35,12 @@ addEventListener("keydown", function(event) {
        console.log(game.board);
     }
 });
+
+addEventListener("keydown", function(event) {
+    if (event.code === "Space"){
+       while (game.activePiece != null) {
+        shiftPieceDown();  
+       }
+       event.preventDefault();
+    }
+});
