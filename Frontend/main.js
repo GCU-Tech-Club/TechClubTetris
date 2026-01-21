@@ -3,7 +3,7 @@ const ROWS = parseInt(getComputedStyle(document.documentElement).getPropertyValu
 
 const boardEl = document.getElementById('board');
 
-const cells = [];
+export const cells = [];
 for (let r = 0; r < ROWS; r++) {
     const row = [];
     for (let c = 0; c < COLS; c++) {
