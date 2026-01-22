@@ -129,6 +129,10 @@ export function shiftPieceDown()
           }
       }
        game.activePiece = null; 
+
+       // Update the score
+       updateScore(); 
+
        return;
     }
 
@@ -142,6 +146,46 @@ export function shiftPieceDown()
             if (game.activePiece.shape[game.activePiece.rot][i][j] === 1) game.board[game.activePiece.row + i][game.activePiece.col + j] = 1;
         }
     }
+}
+
+// Checks for complete rows and adds to the score
+// returns the score to add to the main score
+export function updateScore() {
+
+    let completeRows = 0;
+    let currentScore = 0;
+
+    // iterate through 2d array board and check for complete rows //
+    for (let i = 0; i < 20; i++) {
+        let isRowComplete = true;
+        for (let j = 0; j < 10; j++) {
+            // If the board is 0 at any point, row is incomplete.
+            if (game.board[i][j] === 0) {
+                isRowComplete = false;
+                break;
+            } 
+        }
+        // after iterating through a row check to see if isRowComplete is true
+        if (isRowComplete) {
+            completeRows++; 
+
+            // Remove this row and add a new empty row at the top
+            removeCompleteRow(); 
+        }
+    }
+    // add to score based on the number of complete rows
+    // 1 row = 100pts
+    // 2 rows = 200pts
+    // 3 rows = 300pts
+    // 4 rows = 400pts
+    return currentScore = completeRows * 100; 
+}
+
+//FIXME
+// clear complete lines 
+// add new row to the top
+export function removeCompleteRow() {
+
 }
 
 // Checks if we should solidify piece, returns boolean
@@ -242,3 +286,9 @@ export function shiftRight() {
 }
 }
   console.log(game.board);
+
+  // When a piece is shifted down and solidifies
+  // Iterate through 2d array and check for full rows
+  // If a full row is found, increment a full row counter
+  // After checking, add to score
+  // we will call this funciton in shiftPieceDown when a peice solidifies
