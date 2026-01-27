@@ -185,7 +185,9 @@ export function updateScore() {
 // clear complete lines 
 // add new row to the top
 export function removeCompleteRow() {
-
+    // set all of the values of the complete row back to 0
+    
+        
 }
 
 // Checks if we should solidify piece, returns boolean
