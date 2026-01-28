@@ -183,7 +183,7 @@ export function updateScore() {
     currentScore = completeRows * 100;
     game.score += currentScore;
     updateScoreUI();
-    
+
     //return currentScore; 
 }
 
@@ -198,7 +198,7 @@ export function removeCompleteRow(rowIndex) {
 }
 function updateScoreUI() {
     const scoreElement = document.getElementById('score-box');
-    scoreElement.innertext = `Score: ${game.score}`;
+    scoreElement.innerText = `Score: ${game.score}`;
 }
 
 // Checks if we should solidify piece, returns boolean
