@@ -190,8 +190,11 @@ export function removeCompleteRow(rowIndex) {
     
     game.board.splice(rowIndex, 1);
     game.board.unshift(Array(10).fill(0));
-
         
+}
+function updateScoreUI() {
+    const scoreElement = document.getElementById('score-box');
+    scoreElement.innertext = `Score: ${game.score}`;
 }
 
 // Checks if we should solidify piece, returns boolean
