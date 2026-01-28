@@ -48,7 +48,14 @@ export function errorResponse(
 
   if (details !== undefined) body.details = details;
 
-  return jsonResponse(body, status);
+
+    const responseHeaders = new Headers();
+    responseHeaders.set("Access-Control-Allow-Origin", "http://127.0.0.1:5500");
+    responseHeaders.set("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+    responseHeaders.set("Access-Control-Allow-Headers", "authorization, x-client-info, apikey, content-type");
+    responseHeaders.set("Access-Control-Allow-Credentials", "true");
+
+  return jsonResponse(body, status, responseHeaders);
 }
 
 /**
@@ -61,6 +68,7 @@ export function badRequest(
   message: string,
   details?: string | string[]
 ): Response {
+
   return errorResponse(message, 400, details);
 }
 

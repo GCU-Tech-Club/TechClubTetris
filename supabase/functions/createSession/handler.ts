@@ -26,7 +26,7 @@ export async function handleCreateSession(): Promise<Response> {
 			name: "session",
 			value: session.jwt,
 			path: "/",
-			sameSite: "Strict",
+			sameSite: "None",
 			secure: true,
 			httpOnly: true,
 		});
