@@ -39,13 +39,20 @@ export async function handleSaveHighScore(
       score: body.score,
     });
 
+    const responseHeaders = new Headers();
+    responseHeaders.set("Access-Control-Allow-Origin", "http://127.0.0.1:5500");
+    responseHeaders.set("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+    responseHeaders.set("Access-Control-Allow-Headers", "authorization, x-client-info, apikey, content-type");
+    responseHeaders.set("Access-Control-Allow-Credentials", "true");
+
     // Return success response
     return jsonResponse(
       {
         message: "High score saved",
         data: savedScore,
       },
-      201
+      201,
+      responseHeaders
     );
   } catch (error) {
     // Handle Response objects thrown by authenticateSession
