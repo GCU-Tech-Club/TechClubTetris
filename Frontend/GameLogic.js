@@ -187,11 +187,8 @@ export function updateScore() {
 // add new row to the top
 export function removeCompleteRow(rowIndex) {
     // set all of the values of the complete row back to 0
-    
     game.board.splice(rowIndex, 1);
     game.board.unshift(Array(10).fill(0));
-
-        
 }
 
 // Checks if we should solidify piece, returns boolean
@@ -293,8 +290,9 @@ export function shiftRight() {
 }
   console.log(game.board);
 
-  // When a piece is shifted down and solidifies
-  // Iterate through 2d array and check for full rows
-  // If a full row is found, increment a full row counter
-  // After checking, add to score
-  // we will call this funciton in shiftPieceDown when a peice solidifies
+
+  // THESE ARE FOR TESTING DELETE THEM WHEN DONE //
+  window.game = game;
+  window.removeCompleteRow = removeCompleteRow;
+  window.updateScore = updateScore;
+  // THESE ARE FOR TESTING DELETE THEM DONE //
