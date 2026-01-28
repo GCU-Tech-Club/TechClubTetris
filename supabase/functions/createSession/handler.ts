@@ -16,13 +16,17 @@ export async function handleCreateSession(): Promise<Response> {
 
 		// Create response headers
 		const responseHeaders = new Headers();
+		responseHeaders.set("Access-Control-Allow-Origin", "http://127.0.0.1:5500");
+		responseHeaders.set("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+		responseHeaders.set("Access-Control-Allow-Headers", "authorization, x-client-info, apikey, content-type");
+        responseHeaders.set("Access-Control-Allow-Credentials", "true");
 
 		// Create cookie for response
 		setCookie(responseHeaders, {
 			name: "session",
 			value: session.jwt,
 			path: "/",
-			sameSite: "Strict",
+			sameSite: "None",
 			secure: true,
 			httpOnly: true,
 		});

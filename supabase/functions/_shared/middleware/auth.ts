@@ -61,6 +61,12 @@ export async function authenticateSession(
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
 
+    const responseHeaders = new Headers();
+    responseHeaders.set("Access-Control-Allow-Origin", "http://127.0.0.1:5500");
+    responseHeaders.set("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+    responseHeaders.set("Access-Control-Allow-Headers", "authorization, x-client-info, apikey, content-type");
+    responseHeaders.set("Access-Control-Allow-Credentials", "true");
+
     // Return unauthorized response (handled by caller)
     throw new Response(
       JSON.stringify({
@@ -69,7 +75,7 @@ export async function authenticateSession(
       }),
       {
         status: 401,
-        headers: { "Content-Type": "application/json" },
+        headers: responseHeaders,
       }
     );
   }
