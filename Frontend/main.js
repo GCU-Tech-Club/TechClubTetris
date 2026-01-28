@@ -1,3 +1,6 @@
+import { createSession, saveHighScore } from "./scores.js";
+import { getHighScores } from "./scores.js";
+
 const COLS = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--cols')) || 10;
 const ROWS = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--rows')) || 20;
 
@@ -17,3 +20,8 @@ for (let r = 0; r < ROWS; r++) {
     }
     cells.push(row);
 }
+
+await saveHighScore();
+await createSession();
+await getHighScores();
+
