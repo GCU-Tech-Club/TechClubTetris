@@ -170,7 +170,8 @@ export function updateScore() {
             completeRows++; 
 
             // Remove this row and add a new empty row at the top
-            removeCompleteRow(); 
+            removeCompleteRow(i); 
+            i--;
         }
     }
     // add to score based on the number of complete rows
@@ -184,9 +185,12 @@ export function updateScore() {
 //FIXME
 // clear complete lines 
 // add new row to the top
-export function removeCompleteRow() {
+export function removeCompleteRow(rowIndex) {
     // set all of the values of the complete row back to 0
     
+    game.board.splice(rowIndex, 1);
+    game.board.unshift(Array(10).fill(0));
+
         
 }
 
