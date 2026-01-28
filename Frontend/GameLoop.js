@@ -3,6 +3,11 @@ import { cells } from "./main.js";
 
 // Piece Test (use debugger to see board, click on game then board to see the board)
 spawnPiece("T");
+
+let alwaysTrue = true;
+while(alwaysTrue === true)
+{
+    shiftPieceDown(); 
 for (let i = 0; i < 10; i++)
 {
     for(let j = 0; j < 20; j++)
@@ -11,5 +16,7 @@ for (let i = 0; i < 10; i++)
         {
             cells[i][j].style.backgroundColor = "red";
         }
+        
     }
+}
 }
