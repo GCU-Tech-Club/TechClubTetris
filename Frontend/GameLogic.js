@@ -5,7 +5,8 @@ console.log(TETROMINOS);
 // Game state
 export const game = {
     board: Array.from({ length: 20 }, () => Array(10).fill(0)),
-    activePiece: null
+    activePiece: null,
+    score: 0
 };
 
 export function getGameState() {
@@ -179,7 +180,11 @@ export function updateScore() {
     // 2 rows = 200pts
     // 3 rows = 300pts
     // 4 rows = 400pts
-    return currentScore = completeRows * 100; 
+    currentScore = completeRows * 100;
+    game.score += currentScore;
+    updateScoreUI();
+    
+    //return currentScore; 
 }
 
 //FIXME
