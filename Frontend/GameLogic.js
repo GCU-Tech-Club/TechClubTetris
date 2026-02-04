@@ -187,7 +187,6 @@ export function updateScore() {
     //return currentScore; 
 }
 
-//FIXME
 // clear complete lines 
 // add new row to the top
 export function removeCompleteRow(rowIndex) {
