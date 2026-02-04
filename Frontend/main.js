@@ -1,5 +1,3 @@
-import { createSession, saveHighScore, getHighScores } from "./scores.js";
-
 const COLS = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--cols')) || 10;
 const ROWS = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--rows')) || 20;
 
