@@ -134,7 +134,7 @@ export function shiftPieceDown()
        // Update the score
        updateScore(); 
 
-       return;
+       return -1;
     }
 
     // Move the piece down if we shouldn't solidify   
@@ -147,6 +147,7 @@ export function shiftPieceDown()
             if (game.activePiece.shape[game.activePiece.rot][i][j] === 1) game.board[game.activePiece.row + i][game.activePiece.col + j] = 1;
         }
     }
+    return 1;
 }
 
 // Checks for complete rows and adds to the score
@@ -227,7 +228,7 @@ export function printBoard() {
     console.log(game.board[2].toString());
 }
 
-export function shiftLeft() {
+export function shiftPieceLeft() {
     let isAgainstEdge = false;
 
     if ((game.activePiece.col === 0) || (game.activePiece.col === 9)) {
@@ -261,11 +262,10 @@ export function shiftLeft() {
     
 }
 
-console.log(game.board);
 
 
 
-export function shiftRight() {
+export function shiftPieceRight() {
     let pieceLength = 0;
     const lenghts = game.activePiece.shape[game.activePiece.rot].map(row => row.filter(num => num === 1).length);
     pieceLength =Math.max(...lenghts);
@@ -297,7 +297,6 @@ export function shiftRight() {
     }
 }
 }
-  console.log(game.board);
 
 
   // THESE ARE FOR TESTING DELETE THEM WHEN DONE //

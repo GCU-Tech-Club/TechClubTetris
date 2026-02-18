@@ -1,4 +1,4 @@
-import { shiftPieceDown, rotatePiece, printBoard, game} from "./GameLogic.js";
+import { shiftPieceDown, rotatePiece, printBoard, game, shiftPieceLeft, shiftPieceRight} from "./GameLogic.js";
 
 // Shift left with A or arrow left key
 addEventListener("keydown", function(event) {
@@ -38,8 +38,9 @@ addEventListener("keydown", function(event) {
 
 addEventListener("keydown", function(event) {
     if (event.code === "Space"){
-       while (game.activePiece != null) {
-        shiftPieceDown();  
+       let x = 1;
+       while (x === 1) {
+        x = shiftPieceDown();  
        }
        event.preventDefault();
     }
