@@ -1,4 +1,4 @@
-import { shiftPieceDown, rotatePiece, printBoard, game, shiftPieceLeft, shiftPieceRight} from "./GameLogic.js";
+import { shiftPieceDown, rotatePiece, printBoard, game, shiftPieceLeft, shiftPieceRight, spawnPiece} from "./GameLogic.js";
 
 // Shift left with A or arrow left key
 addEventListener("keydown", function(event) {
@@ -12,7 +12,13 @@ addEventListener("keydown", function(event) {
 // Shift down with S or arrow down key
 addEventListener("keydown", function(event) {
     if (event.code === "KeyS" || event.code === "ArrowDown"){
-       shiftPieceDown();
+       //shiftPieceDown();
+       let shouldSpawnNewPiece = shiftPieceDown();
+  if (shouldSpawnNewPiece === -1) {
+    const pieces = ["T", "L", "O", "I", "S", "Z", "J"];
+    let randomPieceSelect = Math.floor(Math.random() * 6);
+    spawnPiece(pieces[randomPieceSelect]);
+  }
        event.preventDefault();
               console.log(game.board);
 
@@ -38,9 +44,14 @@ addEventListener("keydown", function(event) {
 
 addEventListener("keydown", function(event) {
     if (event.code === "Space"){
-       let x = 1;
-       while (x === 1) {
-        x = shiftPieceDown();  
+       let shouldSpawnNewPiece = 1;
+       while (shouldSpawnNewPiece === 1) {
+         shouldSpawnNewPiece = shiftPieceDown();
+  if (shouldSpawnNewPiece === -1) {
+    const pieces = ["T", "L", "O", "I", "S", "Z", "J"];
+    let randomPieceSelect = Math.floor(Math.random() * 6);
+    spawnPiece(pieces[randomPieceSelect]);
+  }  
        }
        event.preventDefault();
     }
