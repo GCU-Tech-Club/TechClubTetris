@@ -20,6 +20,17 @@ export function getGameState() {
   return game;
 }
 
+export function shouldSpawnNewPieceAndShiftPieceDown() {
+  let shouldSpawnNewPiece = shiftPieceDown();
+  if (shouldSpawnNewPiece === -1) {
+    const pieces = ["T", "L", "O", "I", "S", "Z", "J"];
+    let randomPieceSelect = Math.floor(Math.random() * 6);
+    spawnPiece(pieces[randomPieceSelect]);
+  }
+
+  return shouldSpawnNewPiece;
+}
+
 // Create a new active piece
 export function spawnPiece(tetrominoKey) {
   const tetromino = TETROMINOS[tetrominoKey]; // 'T'

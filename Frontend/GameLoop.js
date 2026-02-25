@@ -1,11 +1,7 @@
 import {
   spawnPiece,
   game,
-  shiftPieceDown,
-  startTimer,
-  setNextPiece,
-  getNextPiece,
-  renderNextPiece,
+  shouldSpawnNewPieceAndShiftPieceDown,
 } from "./GameLogic.js";
 import { cells, nextPieceCells } from "./main.js";
 
@@ -34,11 +30,7 @@ renderNextPiece(nextPieceCells);
 setInterval(() => {
   // do gravity
   // solidify pieces
-  let shouldSpawnNewPiece = shiftPieceDown();
-  if (shouldSpawnNewPiece === -1) {
-    spawnPiece(getNextPiece());
-    renderNextPiece(nextPieceCells);
-  }
+  shouldSpawnNewPieceAndShiftPieceDown();
   // update score
   // paint board
   paintBoard();
