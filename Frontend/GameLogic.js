@@ -6,6 +6,7 @@ console.log(TETROMINOS);
 export const game = {
   board: Array.from({ length: 20 }, () => Array(10).fill(0)),
   activePiece: null,
+  nextPiece: null,
   score: 0,
   timer: {
     startTime: null,
@@ -31,13 +32,55 @@ export function spawnPiece(tetrominoKey) {
   };
 
   if (game.activePiece != null) {
-    console.log(game.activePiece.shape[game.activePiece.rot]);
     for (let i = 0; i < 4; i++) {
       for (let j = 0; j < 4; j++) {
         // Inner loop for columns
         if (game.activePiece.shape[game.activePiece.rot][i][j] === 1) {
           game.board[i + game.activePiece.row][j + game.activePiece.col] = 1;
         }
+      }
+    }
+  }
+}
+
+// Generate a random tetromino key
+export function getRandomPieceKey() {
+  const pieces = ["T", "L", "O", "I", "S", "Z", "J"];
+  const randomIndex = Math.floor(Math.random() * pieces.length);
+  return pieces[randomIndex];
+}
+
+// Set the next piece
+export function setNextPiece() {
+  game.nextPiece = getRandomPieceKey();
+}
+
+// Get the current next piece and generate a new one
+export function getNextPiece() {
+  const piece = game.nextPiece;
+  setNextPiece();
+  return piece;
+}
+
+// Render the next piece in the preview box
+export function renderNextPiece(nextPieceCells) {
+  if (!game.nextPiece) return;
+
+  const tetromino = TETROMINOS[game.nextPiece];
+  const shape = tetromino.shapes[0]; // Show first rotation
+
+  // Clear all cells
+  for (let r = 0; r < 4; r++) {
+    for (let c = 0; c < 4; c++) {
+      nextPieceCells[r][c].style.backgroundColor = "transparent";
+    }
+  }
+
+  // Render the piece
+  for (let r = 0; r < 4; r++) {
+    for (let c = 0; c < 4; c++) {
+      if (shape[r][c] === 1) {
+        nextPieceCells[r][c].style.backgroundColor = "var(--filled)";
       }
     }
   }

@@ -135,6 +135,17 @@ body {
 	background: var(--grid);
 	border-radius: 8px;
 	padding: var(--gap);
+	aspect-ratio: 1;
+    /* Calculate width to match board cell size: 4 cells + 3 gaps */
+    /* Board width = height * (cols/rows) = height * (10/20) = height * 0.5 */
+    /* Mini width = 0.4 * board width - 0.6 * gap */
+    /* Thanks Chat :) */
+    width: calc(0.4 * (
+                min(calc(100svh - 200px), 90vh, 900px) * var(--cols) /
+                    var(--rows)
+            ) -
+            0.6 * var(--gap)
+    );
 }
 
 .game-container {
@@ -148,28 +159,24 @@ body {
 	max-height: calc(100vh - 32px);
 }
 
-.next-peice-box {
-	background-color: var(--bg);
-	border: 5px solid white;
-	width: 200px;
-	height: 280px;
-	display: flex;
-	justify-content: center;
-	grid-column: 3;
-	grid-row: 1 / span 2;
-}
 .score-box,
-.time-box {
-	display: flex;
-	flex-direction: column;
-	width: 200px;
-	height: 140px;
-	border: 5px solid white;
-	justify-content: flex-start;
-	align-items: center;
-	gap: 10px;
-	grid-column: 1;
-	grid-row: 1;
+.time-box,
+.next-peice-box {
+    display: flex;
+    flex-direction: column;
+    width: 200px;
+    height: 140px;
+    border: 5px solid white;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px;
+    grid-column: 1;
+    grid-row: 1;
+}
+.next-peice-box {
+    height: 280px;
+    grid-column: 3;
+    grid-row: 1 / span 2;
 }
 
 .time-box {

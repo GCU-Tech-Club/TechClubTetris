@@ -2,9 +2,12 @@ import {
   spawnPiece,
   game,
   shiftPieceDown,
-  startTimer
+  startTimer,
+  setNextPiece,
+  getNextPiece,
+  renderNextPiece,
 } from "./GameLogic.js";
-import { cells } from "./main.js";
+import { cells, nextPieceCells } from "./main.js";
 
 // Piece Test (use debugger to see board, click on game then board to see the board)
 
@@ -19,24 +22,24 @@ function paintBoard() {
   for (let i = 0; i < 20; i++) {
     for (let j = 0; j < 10; j++) {
       if (game.board[i][j] === 1) {
-        cells[i][j].style.backgroundColor = "red";
+        cells[i][j].style.backgroundColor = "var(--filled)";
       }
     }
   }
 }
 startTimer();
-spawnPiece("T");
+setNextPiece();
+spawnPiece(getNextPiece());
+renderNextPiece(nextPieceCells);
 setInterval(() => {
   // do gravity
   // solidify pieces
   let shouldSpawnNewPiece = shiftPieceDown();
   if (shouldSpawnNewPiece === -1) {
-    const pieces = ["T", "L", "O", "I", "S", "Z", "J"];
-    let randomPieceSelect = Math.floor(Math.random() * 6);
-    spawnPiece(pieces[randomPieceSelect]);
+    spawnPiece(getNextPiece());
+    renderNextPiece(nextPieceCells);
   }
   // update score
   // paint board
   paintBoard();
-  console.log(game.board);
 }, 200);
