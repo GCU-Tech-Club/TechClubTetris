@@ -24,8 +24,35 @@ export function shouldSpawnNewPieceAndShiftPieceDown() {
   return shouldSpawnNewPiece;
 }
 
+// Check if pieces have reached the top of the board
+function isPieceAtTop() {
+  // Check if there are any solidified blocks (1s) in the top 2 rows
+  for (let i = 0; i < 1; i++) {
+    for (let j = 0; j < 10; j++) {
+      if (game.board[i][j] === 1) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+// Clear the entire game board and reset it to all 0s
+export function clearBoard() {
+  game.board = Array.from({ length: 20 }, () => Array(10).fill(0));
+  game.activePiece = null;
+  game.score = 0;
+  updateScoreUI();
+}
+
 // Create a new active piece
 export function spawnPiece(tetrominoKey) {
+  // Check if pieces have reached the top; if so, clear the board
+  if (isPieceAtTop()) {
+    alert("Game Over");
+    clearBoard();
+  }
+
   const tetromino = TETROMINOS[tetrominoKey]; // 'T'
   const newPiece = {
     shape: tetromino["shapes"],
