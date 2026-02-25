@@ -1,4 +1,5 @@
 import { TETROMINOS } from "./Pieces.js";
+import { showGameOver } from "./main.js";   
 
 console.log("this is where the board goes");
 console.log(TETROMINOS);
@@ -49,10 +50,14 @@ export function clearBoard() {
 export function spawnPiece(tetrominoKey) {
   // Check if pieces have reached the top; if so, clear the board
   if (isPieceAtTop()) {
-    alert("Game Over");
+    showGameOver(game.score);
     clearBoard();
   }
 
+ export function playAgain() {
+    clearBoard();
+  }
+   
   const tetromino = TETROMINOS[tetrominoKey]; // 'T'
   const newPiece = {
     shape: tetromino["shapes"],

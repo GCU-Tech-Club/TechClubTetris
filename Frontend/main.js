@@ -17,3 +17,13 @@ for (let r = 0; r < ROWS; r++) {
     }
     cells.push(row);
 }
+
+export function showGameOver(score) {
+    document.getElementById('finalScore').textContent = `Score: ${score}`;
+    document.getElementById('gameOverPopup').classList.remove('hidden');
+}   
+
+export function playAgain() {
+    document.getElementById('gameOverPopup').classList.add('hidden');
+    location.reload();
+}
