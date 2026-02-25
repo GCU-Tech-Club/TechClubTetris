@@ -235,7 +235,10 @@ export function printBoard() {
 }
 
 export function shiftPieceLeft() {
-  if (game.activePiece.col <= 0) return;
+  // Get the left most cells per row
+  let leftCells = getLeftCells(game.activePiece.shape[game.activePiece.rot]);
+
+  if (game.activePiece.col <= 0 || isAgainstPieceLeft(leftCells)) return;
 
   // Erase the current piece off the board
   for (let i = 0; i < 4; i++) {
@@ -257,6 +260,34 @@ export function shiftPieceLeft() {
   }
 }
 
+// Shift piece left merge helpers
+
+// get left pieces
+function getLeftCells(piece) {
+  const cells = [];
+
+  for (let r = 0; r < piece.length; r++) {
+    const row = piece[r];
+    const c = row.indexOf(1); // first 1 in this row
+    if (c !== -1) cells.push({ r, c });
+  }
+
+  return cells;
+}
+
+function isAgainstPieceLeft(leftCells) {
+  // find true board location for each piece and check if there is a 1 next to it
+  let isAgainstPieceLeft = false;
+  leftCells.forEach((cell) => {
+    let boardRow = game.activePiece.row + cell.r;
+    let boardColumn = game.activePiece.col + cell.c;
+    if (game.board[boardRow][boardColumn - 1] === 1) {
+      isAgainstPieceLeft = true;
+    }
+  });
+  return isAgainstPieceLeft;
+}
+
 export function shiftPieceRight() {
   //   let pieceLength = 0;
   const lenghts = game.activePiece.shape[game.activePiece.rot].map(
@@ -264,8 +295,13 @@ export function shiftPieceRight() {
   );
   let pieceLength = Math.max(...lenghts);
 
+  let rightCells = getRightCells(game.activePiece.shape[game.activePiece.rot]);
   // Check only right edge
-  if (game.activePiece.col + pieceLength - 1 >= 9) return;
+  if (
+    game.activePiece.col + pieceLength - 1 >= 9 ||
+    isAgainstPieceRight(rightCells)
+  )
+    return;
 
   // Erase the current piece off the board
   for (let i = 0; i < 4; i++) {
@@ -285,6 +321,32 @@ export function shiftPieceRight() {
       }
     }
   }
+}
+
+// get right pieces
+function getRightCells(piece) {
+  const cells = [];
+  for (let r = 0; r < piece.length; r++) {
+    const row = piece[r];
+    const c = row.lastIndexOf(1); // last 1 in this row
+    if (c !== -1) cells.push({ r, c });
+  }
+  return cells;
+}
+
+function isAgainstPieceRight(leftCells) {
+  // find true board location for each piece and check if there is a 1 next to it
+  let isAgainstPieceRight = false;
+  let width = game.board[0].length;
+  leftCells.forEach((cell) => {
+    let boardRow = game.activePiece.row + cell.r;
+    let boardColumn = game.activePiece.col + cell.c;
+    if (boardColumn + 1 > width - 1) return;
+    if (game.board[boardRow][boardColumn + 1] === 1) {
+      isAgainstPieceRight = true;
+    }
+  });
+  return isAgainstPieceRight;
 }
 
 // THESE ARE FOR TESTING DELETE THEM WHEN DONE //
