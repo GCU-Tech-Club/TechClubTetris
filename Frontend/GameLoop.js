@@ -1,11 +1,8 @@
 import {
   spawnPiece,
-  printBoard,
   game,
-  rotatePiece,
   shiftPieceDown,
-  shiftPieceRight,
-  shiftPieceLeft,
+  startTimer
 } from "./GameLogic.js";
 import { cells } from "./main.js";
 
@@ -27,6 +24,7 @@ function paintBoard() {
     }
   }
 }
+startTimer();
 spawnPiece("T");
 setInterval(() => {
   // do gravity

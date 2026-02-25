@@ -7,6 +7,12 @@ export const game = {
   board: Array.from({ length: 20 }, () => Array(10).fill(0)),
   activePiece: null,
   score: 0,
+  timer: {
+    startTime: null,
+    elapsed: 0, // milliseconds
+    isRunning: false,
+    intervalId: null
+  }
 };
 
 export function getGameState() {
@@ -274,6 +280,29 @@ export function shiftPieceRight() {
       }
     }
   }
+}
+
+export function startTimer() {
+  if (game.timer.isRunning) return;
+  
+  game.timer.isRunning = true;
+  game.timer.startTime = Date.now() - game.timer.elapsed;
+  
+  game.timer.intervalId = setInterval(() => {
+    game.timer.elapsed = Date.now() - game.timer.startTime;
+    updateTimerUI();
+  }, 1000);
+}
+
+function updateTimerUI() {
+  const timerElement = document.getElementById('time-box')?.querySelector('p');
+  if (!timerElement) return;
+  
+  const totalTimeInSeconds = Math.floor(game.timer.elapsed / 1000);
+  const minutes = Math.floor(totalTimeInSeconds / 60);
+  const seconds = totalTimeInSeconds % 60;
+  
+  timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }
 
 // THESE ARE FOR TESTING DELETE THEM WHEN DONE //
