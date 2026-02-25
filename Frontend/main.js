@@ -27,3 +27,5 @@ export function playAgain() {
     document.getElementById('gameOverPopup').classList.add('hidden');
     location.reload();
 }
+
+document.getElementById('playAgainBtn').addEventListener('click', playAgain);

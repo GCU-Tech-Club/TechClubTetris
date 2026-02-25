@@ -53,10 +53,6 @@ export function spawnPiece(tetrominoKey) {
     showGameOver(game.score);
     clearBoard();
   }
-
- export function playAgain() {
-    clearBoard();
-  }
    
   const tetromino = TETROMINOS[tetrominoKey]; // 'T'
   const newPiece = {
