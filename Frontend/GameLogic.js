@@ -164,38 +164,34 @@ export function shiftPieceDown() {
 // Checks for complete rows and adds to the score
 // returns the score to add to the main score
 export function updateScore() {
-  let completeRows = 0;
-  let currentScore = 0;
+    let completeRows = 0;
 
-  // iterate through 2d array board and check for complete rows //
-  for (let i = 0; i < 20; i++) {
-    let isRowComplete = true;
-    for (let j = 0; j < 10; j++) {
-      // If the board is 0 at any point, row is incomplete.
-      if (game.board[i][j] === 0) {
-        isRowComplete = false;
-        break;
-      }
+    // iterate through 2d array board and check for complete rows //
+    for (let i = 0; i < 20; i++) {
+        let isRowComplete = true;
+        for (let j = 0; j < 10; j++) {
+            // If the board is 0 at any point, row is incomplete.
+            if (game.board[i][j] === 0) {
+                isRowComplete = false;
+                break;
+            } 
+        }
+        // after iterating through a row check to see if isRowComplete is true
+        if (isRowComplete) {
+            completeRows++; 
+            // add to score based on the number of complete rows
+            // 1 row = 100pts
+            // 2 rows = 200pts
+            // 3 rows = 300pts
+            // 4 rows = 400pts
+            game.score += completeRows * 100;
+            updateScoreUI();
+
+            // Remove this row and add a new empty row at the top
+            removeCompleteRow(i); 
+            i--;
+        }
     }
-    // after iterating through a row check to see if isRowComplete is true
-    if (isRowComplete) {
-      completeRows++;
-
-      // Remove this row and add a new empty row at the top
-      removeCompleteRow(i);
-      i--;
-    }
-  }
-  // add to score based on the number of complete rows
-  // 1 row = 100pts
-  // 2 rows = 200pts
-  // 3 rows = 300pts
-  // 4 rows = 400pts
-  currentScore = completeRows * 100;
-  game.score += currentScore;
-  updateScoreUI();
-
-  //return currentScore;
 }
 
 // clear complete lines
@@ -206,8 +202,9 @@ export function removeCompleteRow(rowIndex) {
   game.board.unshift(Array(10).fill(0));
 }
 function updateScoreUI() {
-  const scoreElement = document.getElementById("score-box");
-  scoreElement.innerText = `Score: ${game.score}`;
+    // scoreElement is the p tag inside the score-box
+    const scoreElement = document.getElementById('score-box')?.querySelector('p');
+    scoreElement.textContent = game.score;
 }
 
 // Checks if we should solidify piece, returns boolean
