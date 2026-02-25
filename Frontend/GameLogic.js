@@ -294,6 +294,25 @@ export function startTimer() {
   }, 1000);
 }
 
+export function pauseTimer() {
+  if (!game.timer.isRunning) return;
+  
+  game.timer.isRunning = false;
+  clearInterval(game.timer.intervalId);
+  game.timer.intervalId = null;
+}
+
+export function stopTimer() {
+  pauseTimer();
+  game.timer.elapsed = 0;
+  updateTimerUI();
+}
+
+export function resetTimer() {
+  stopTimer();
+  startTimer();
+}
+
 function updateTimerUI() {
   const timerElement = document.getElementById('time-box')?.querySelector('p');
   if (!timerElement) return;
