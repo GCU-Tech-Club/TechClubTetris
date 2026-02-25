@@ -6,6 +6,7 @@ import {
   shiftPieceDown,
   shiftPieceRight,
   shiftPieceLeft,
+  shouldSpawnNewPieceAndShiftPieceDown,
 } from "./GameLogic.js";
 import { cells } from "./main.js";
 
@@ -31,12 +32,7 @@ spawnPiece("T");
 setInterval(() => {
   // do gravity
   // solidify pieces
-  let shouldSpawnNewPiece = shiftPieceDown();
-  if (shouldSpawnNewPiece === -1) {
-    const pieces = ["T", "L", "O", "I", "S", "Z", "J"];
-    let randomPieceSelect = Math.floor(Math.random() * 6);
-    spawnPiece(pieces[randomPieceSelect]);
-  }
+  shouldSpawnNewPieceAndShiftPieceDown();
   // update score
   // paint board
   paintBoard();
