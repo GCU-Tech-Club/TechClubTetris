@@ -29,7 +29,7 @@ function paintBoard() {
   }
 }
 spawnPiece("T");
-setInterval(() => {
+const gameInterval = setInterval(() => {
   // do gravity
   // solidify pieces
   shouldSpawnNewPieceAndShiftPieceDown();

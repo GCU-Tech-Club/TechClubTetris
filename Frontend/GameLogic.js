@@ -27,13 +27,19 @@ export function shouldSpawnNewPieceAndShiftPieceDown() {
 // Create a new active piece
 export function spawnPiece(tetrominoKey) {
   const tetromino = TETROMINOS[tetrominoKey]; // 'T'
-  game.activePiece = {
+  const newPiece = {
     shape: tetromino["shapes"],
     rot: 0,
     row: 0,
     col: 3,
     id: tetromino["id"],
   };
+
+  if (!canPlace(newPiece.shape[newPiece.rot], newPiece.row, newPiece.col)) {
+    return false;
+  }
+
+  game.activePiece = newPiece;
 
   if (game.activePiece != null) {
     console.log(game.activePiece.shape[game.activePiece.rot]);
@@ -46,6 +52,7 @@ export function spawnPiece(tetrominoKey) {
       }
     }
   }
+  return true;
 }
 
 // Change the active piece to the next rotation
