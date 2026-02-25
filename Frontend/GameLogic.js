@@ -213,34 +213,34 @@ export function shiftPieceDown() {
 // Checks for complete rows and adds to the score
 // returns the score to add to the main score
 export function updateScore() {
-    let completeRows = 0;
+  let completeRows = 0;
 
-    // iterate through 2d array board and check for complete rows //
-    for (let i = 0; i < 20; i++) {
-        let isRowComplete = true;
-        for (let j = 0; j < 10; j++) {
-            // If the board is 0 at any point, row is incomplete.
-            if (game.board[i][j] === 0) {
-                isRowComplete = false;
-                break;
-            } 
-        }
-        // after iterating through a row check to see if isRowComplete is true
-        if (isRowComplete) {
-            completeRows++; 
-            // add to score based on the number of complete rows
-            // 1 row = 100pts
-            // 2 rows = 200pts
-            // 3 rows = 300pts
-            // 4 rows = 400pts
-            game.score += completeRows * 100;
-            updateScoreUI();
-
-            // Remove this row and add a new empty row at the top
-            removeCompleteRow(i); 
-            i--;
-        }
+  // iterate through 2d array board and check for complete rows //
+  for (let i = 0; i < 20; i++) {
+    let isRowComplete = true;
+    for (let j = 0; j < 10; j++) {
+      // If the board is 0 at any point, row is incomplete.
+      if (game.board[i][j] === 0) {
+        isRowComplete = false;
+        break;
+      }
     }
+    // after iterating through a row check to see if isRowComplete is true
+    if (isRowComplete) {
+      completeRows++;
+      // add to score based on the number of complete rows
+      // 1 row = 100pts
+      // 2 rows = 200pts
+      // 3 rows = 300pts
+      // 4 rows = 400pts
+      game.score += completeRows * 100;
+      updateScoreUI();
+
+      // Remove this row and add a new empty row at the top
+      removeCompleteRow(i);
+      i--;
+    }
+  }
 }
 
 // clear complete lines
@@ -251,9 +251,9 @@ export function removeCompleteRow(rowIndex) {
   game.board.unshift(Array(10).fill(0));
 }
 function updateScoreUI() {
-    // scoreElement is the p tag inside the score-box
-    const scoreElement = document.getElementById('score-box')?.querySelector('p');
-    scoreElement.textContent = game.score;
+  // scoreElement is the p tag inside the score-box
+  const scoreElement = document.getElementById("score-box")?.querySelector("p");
+  scoreElement.textContent = game.score;
 }
 
 // Checks if we should solidify piece, returns boolean
@@ -284,10 +284,26 @@ export function printBoard() {
 }
 
 export function shiftPieceLeft() {
-  // Get the left most cells per row
-  let leftCells = getLeftCells(game.activePiece.shape[game.activePiece.rot]);
+  const shape = game.activePiece.shape[game.activePiece.rot];
+  let firstOccupiedColumn = 3; // Default to max possible
 
-  if (game.activePiece.col <= 0 || isAgainstPieceLeft(leftCells)) return;
+  // Scan 4x4 shape to find smallest column index of 1 (lets pieces with empty left columns shift to col 0)
+  for (let row = 0; row < 4; row++) {
+    for (let col = 0; col < 4; col++) {
+      if (shape[row][col] === 1) {
+        if (col < firstOccupiedColumn) {
+          firstOccupiedColumn = col;
+        }
+      }
+    }
+  }
+
+  // Boundary: don't go past left edge
+  if (game.activePiece.col + firstOccupiedColumn <= 0) return;
+
+  // Collision: don't move left into another piece (uses left-edge cells)
+  let leftCells = getLeftCells(shape);
+  if (isAgainstPieceLeft(leftCells)) return;
 
   // Erase the current piece off the board
   for (let i = 0; i < 4; i++) {
@@ -300,6 +316,7 @@ export function shiftPieceLeft() {
 
   game.activePiece.col -= 1; // move left
 
+  // Redraw the piece
   for (let i = 0; i < 4; i++) {
     for (let j = 0; j < 4; j++) {
       if (game.activePiece.shape[game.activePiece.rot][i][j] === 1) {
