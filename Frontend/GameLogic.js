@@ -1,4 +1,5 @@
 import { TETROMINOS } from "./Pieces.js";
+import { nextPieceCells } from "./main.js";
 
 console.log("this is where the board goes");
 console.log(TETROMINOS);
@@ -6,7 +7,14 @@ console.log(TETROMINOS);
 export const game = {
   board: Array.from({ length: 20 }, () => Array(10).fill(0)),
   activePiece: null,
+  nextPiece: null,
   score: 0,
+  timer: {
+    startTime: null,
+    elapsed: 0, // milliseconds
+    isRunning: false,
+    intervalId: null
+  }
 };
 
 export function getGameState() {
@@ -16,9 +24,8 @@ export function getGameState() {
 export function shouldSpawnNewPieceAndShiftPieceDown() {
   let shouldSpawnNewPiece = shiftPieceDown();
   if (shouldSpawnNewPiece === -1) {
-    const pieces = ["T", "L", "O", "I", "S", "Z", "J"];
-    let randomPieceSelect = Math.floor(Math.random() * 6);
-    spawnPiece(pieces[randomPieceSelect]);
+    spawnPiece(getNextPiece());
+    renderNextPiece(nextPieceCells);
   }
 
   return shouldSpawnNewPiece;
@@ -36,13 +43,55 @@ export function spawnPiece(tetrominoKey) {
   };
 
   if (game.activePiece != null) {
-    console.log(game.activePiece.shape[game.activePiece.rot]);
     for (let i = 0; i < 4; i++) {
       for (let j = 0; j < 4; j++) {
         // Inner loop for columns
         if (game.activePiece.shape[game.activePiece.rot][i][j] === 1) {
           game.board[i + game.activePiece.row][j + game.activePiece.col] = 1;
         }
+      }
+    }
+  }
+}
+
+// Generate a random tetromino key
+export function getRandomPieceKey() {
+  const pieces = ["T", "L", "O", "I", "S", "Z", "J"];
+  const randomIndex = Math.floor(Math.random() * pieces.length);
+  return pieces[randomIndex];
+}
+
+// Set the next piece
+export function setNextPiece() {
+  game.nextPiece = getRandomPieceKey();
+}
+
+// Get the current next piece and generate a new one
+export function getNextPiece() {
+  const piece = game.nextPiece;
+  setNextPiece();
+  return piece;
+}
+
+// Render the next piece in the preview box
+export function renderNextPiece(nextPieceCells) {
+  if (!game.nextPiece) return;
+
+  const tetromino = TETROMINOS[game.nextPiece];
+  const shape = tetromino.shapes[0]; // Show first rotation
+
+  // Clear all cells
+  for (let r = 0; r < 4; r++) {
+    for (let c = 0; c < 4; c++) {
+      nextPieceCells[r][c].style.backgroundColor = "transparent";
+    }
+  }
+
+  // Render the piece
+  for (let r = 0; r < 4; r++) {
+    for (let c = 0; c < 4; c++) {
+      if (shape[r][c] === 1) {
+        nextPieceCells[r][c].style.backgroundColor = "var(--filled)";
       }
     }
   }
@@ -321,6 +370,48 @@ export function shiftPieceRight() {
       }
     }
   }
+}
+
+export function startTimer() {
+  if (game.timer.isRunning) return;
+  
+  game.timer.isRunning = true;
+  game.timer.startTime = Date.now() - game.timer.elapsed;
+  
+  game.timer.intervalId = setInterval(() => {
+    game.timer.elapsed = Date.now() - game.timer.startTime;
+    updateTimerUI();
+  }, 1000);
+}
+
+export function pauseTimer() {
+  if (!game.timer.isRunning) return;
+  
+  game.timer.isRunning = false;
+  clearInterval(game.timer.intervalId);
+  game.timer.intervalId = null;
+}
+
+export function stopTimer() {
+  pauseTimer();
+  game.timer.elapsed = 0;
+  updateTimerUI();
+}
+
+export function resetTimer() {
+  stopTimer();
+  startTimer();
+}
+
+function updateTimerUI() {
+  const timerElement = document.getElementById('time-box')?.querySelector('p');
+  if (!timerElement) return;
+  
+  const totalTimeInSeconds = Math.floor(game.timer.elapsed / 1000);
+  const minutes = Math.floor(totalTimeInSeconds / 60);
+  const seconds = totalTimeInSeconds % 60;
+  
+  timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }
 
 // get right pieces
