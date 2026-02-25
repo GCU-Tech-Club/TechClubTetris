@@ -11,12 +11,22 @@
   <body>
     <h1 class="title">TECH CLUB TETRIS</h1>
     <div class="game-container">
+</body>
       <div id="score-box" class="score-box">SCORE:
         <p>0</p>
       </div>
       <div id="time=box" class="time-box">TIME</div>
       <div id="board" class="board" aria-label="Playfield" role="grid"></div>
       <div id="next-peice-box" class="next-peice-box">NEXT</div>
+    </div>
+
+
+    <div id="gameOverPopup" class="popup hidden">
+      <div class="popup-content">
+        <h2>Game Over!</h2>
+        <p id="finalScore">Score: 0</p>
+        <button onclick="playAgain()">Play Again</button>
+      </div>
     </div>
   </body>
 </html>
