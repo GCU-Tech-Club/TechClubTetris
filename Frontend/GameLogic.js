@@ -289,11 +289,7 @@ function isAgainstPieceLeft(leftCells) {
 }
 
 export function shiftPieceRight() {
-  //   let pieceLength = 0;
-  const lenghts = game.activePiece.shape[game.activePiece.rot].map(
-    (row) => row.filter((num) => num === 1).length,
-  );
-  let pieceLength = Math.max(...lenghts);
+let pieceLength = getPieceWidth(game.activePiece.shape[game.activePiece.rot]);
 
   let rightCells = getRightCells(game.activePiece.shape[game.activePiece.rot]);
   // Check only right edge
@@ -354,3 +350,28 @@ window.game = game;
 window.removeCompleteRow = removeCompleteRow;
 window.updateScore = updateScore;
 // THESE ARE FOR TESTING DELETE THEM DONE //
+
+function getPieceWidth(arr) {
+  const cols = Array(arr[0].length).fill(0);
+  
+for (let r = 0; r < arr.length; r++) {
+  for (let c = 0; c < arr[r].length; c++) {
+    if (arr[r][c] === 1) {
+      cols[c] = 1;
+    }
+  }
+}
+
+let maxWidth = 0;
+let current = 0;
+
+for (let i = 0; i < cols.length; i++) {
+  if (cols[i] === 1) {
+    current++;
+    if (current > maxWidth) maxWidth = current;
+  } else {
+    current = 0;
+  }
+}
+return maxWidth;
+}
