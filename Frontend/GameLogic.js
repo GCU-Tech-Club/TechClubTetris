@@ -15,7 +15,7 @@ export const game = {
     elapsed: 0, // milliseconds
     isRunning: false,
     intervalId: null
-  }
+  },
   isOver: false,
 };
 
