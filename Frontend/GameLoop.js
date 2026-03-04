@@ -27,16 +27,12 @@ function paintBoard() {
     }
   }
 }
-startTimer();
-setNextPiece();
-spawnPiece(getNextPiece());
-renderNextPiece(nextPieceCells);
-setInterval(() => {
-  // do gravity
-  // solidify pieces
+spawnPiece("T");
+const gameInterval = setInterval(() => {
+  if (game.isOver) {
+    clearInterval(gameInterval);
+    return;
+  }
   shouldSpawnNewPieceAndShiftPieceDown();
-  renderNextPiece(nextPieceCells);
-  // update score
-  // paint board
   paintBoard();
 }, 200);

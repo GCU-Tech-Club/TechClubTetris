@@ -30,23 +30,28 @@ export async function getHighScores() {
     },
   );
 
-  const data = await response.json();
-  console.log(data);
-  console.log(document.cookie);
+    const data = await response.json();
+    console.log("getHighScores response:", data);
+
+    if (!response.ok) {
+        console.error("getHighScores failed:", response.status, data);
+        return [];
+    }
+
+    return data;
 }
 
-export async function saveHighScore() {
-  const res = await fetch(
-    "https://kspvngepugooryvwkyjw.supabase.co/functions/v1/saveHighScore",
+export async function saveHighScore(initials, score){
+    const res = await fetch("https://kspvngepugooryvwkyjw.supabase.co/functions/v1/saveHighScore",
     {
-      method: "POST",
-      headers: { Authorization: bearerToken },
-      credentials: "include",
-      body: JSON.stringify({
-        initials: "TST",
-        score: 100,
-      }),
-    },
-  );
-  const data = res.json();
+        method: "POST",
+        headers: {
+            "Authorization": bearerToken,
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ initials, score })
+    });
+    const data = await res.json();
+    return data;
 }
