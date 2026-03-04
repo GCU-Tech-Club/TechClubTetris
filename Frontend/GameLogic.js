@@ -1,4 +1,5 @@
 import { TETROMINOS } from "./Pieces.js";
+import { nextPieceCells } from "./main.js";
 
 console.log("this is where the board goes");
 console.log(TETROMINOS);
@@ -6,7 +7,14 @@ console.log(TETROMINOS);
 export const game = {
   board: Array.from({ length: 20 }, () => Array(10).fill(0)),
   activePiece: null,
+  nextPiece: null,
   score: 0,
+  timer: {
+    startTime: null,
+    elapsed: 0, // milliseconds
+    isRunning: false,
+    intervalId: null
+  }
 };
 
 export function getGameState() {
@@ -16,9 +24,8 @@ export function getGameState() {
 export function shouldSpawnNewPieceAndShiftPieceDown() {
   let shouldSpawnNewPiece = shiftPieceDown();
   if (shouldSpawnNewPiece === -1) {
-    const pieces = ["T", "L", "O", "I", "S", "Z", "J"];
-    let randomPieceSelect = Math.floor(Math.random() * 6);
-    spawnPiece(pieces[randomPieceSelect]);
+    spawnPiece(getNextPiece());
+    renderNextPiece(nextPieceCells);
   }
 
   return shouldSpawnNewPiece;
@@ -36,13 +43,55 @@ export function spawnPiece(tetrominoKey) {
   };
 
   if (game.activePiece != null) {
-    console.log(game.activePiece.shape[game.activePiece.rot]);
     for (let i = 0; i < 4; i++) {
       for (let j = 0; j < 4; j++) {
         // Inner loop for columns
         if (game.activePiece.shape[game.activePiece.rot][i][j] === 1) {
           game.board[i + game.activePiece.row][j + game.activePiece.col] = 1;
         }
+      }
+    }
+  }
+}
+
+// Generate a random tetromino key
+export function getRandomPieceKey() {
+  const pieces = ["T", "L", "O", "I", "S", "Z", "J"];
+  const randomIndex = Math.floor(Math.random() * pieces.length);
+  return pieces[randomIndex];
+}
+
+// Set the next piece
+export function setNextPiece() {
+  game.nextPiece = getRandomPieceKey();
+}
+
+// Get the current next piece and generate a new one
+export function getNextPiece() {
+  const piece = game.nextPiece;
+  setNextPiece();
+  return piece;
+}
+
+// Render the next piece in the preview box
+export function renderNextPiece(nextPieceCells) {
+  if (!game.nextPiece) return;
+
+  const tetromino = TETROMINOS[game.nextPiece];
+  const shape = tetromino.shapes[0]; // Show first rotation
+
+  // Clear all cells
+  for (let r = 0; r < 4; r++) {
+    for (let c = 0; c < 4; c++) {
+      nextPieceCells[r][c].style.backgroundColor = "transparent";
+    }
+  }
+
+  // Render the piece
+  for (let r = 0; r < 4; r++) {
+    for (let c = 0; c < 4; c++) {
+      if (shape[r][c] === 1) {
+        nextPieceCells[r][c].style.backgroundColor = "var(--filled)";
       }
     }
   }
@@ -164,34 +213,34 @@ export function shiftPieceDown() {
 // Checks for complete rows and adds to the score
 // returns the score to add to the main score
 export function updateScore() {
-    let completeRows = 0;
+  let completeRows = 0;
 
-    // iterate through 2d array board and check for complete rows //
-    for (let i = 0; i < 20; i++) {
-        let isRowComplete = true;
-        for (let j = 0; j < 10; j++) {
-            // If the board is 0 at any point, row is incomplete.
-            if (game.board[i][j] === 0) {
-                isRowComplete = false;
-                break;
-            } 
-        }
-        // after iterating through a row check to see if isRowComplete is true
-        if (isRowComplete) {
-            completeRows++; 
-            // add to score based on the number of complete rows
-            // 1 row = 100pts
-            // 2 rows = 200pts
-            // 3 rows = 300pts
-            // 4 rows = 400pts
-            game.score += completeRows * 100;
-            updateScoreUI();
-
-            // Remove this row and add a new empty row at the top
-            removeCompleteRow(i); 
-            i--;
-        }
+  // iterate through 2d array board and check for complete rows //
+  for (let i = 0; i < 20; i++) {
+    let isRowComplete = true;
+    for (let j = 0; j < 10; j++) {
+      // If the board is 0 at any point, row is incomplete.
+      if (game.board[i][j] === 0) {
+        isRowComplete = false;
+        break;
+      }
     }
+    // after iterating through a row check to see if isRowComplete is true
+    if (isRowComplete) {
+      completeRows++;
+      // add to score based on the number of complete rows
+      // 1 row = 100pts
+      // 2 rows = 200pts
+      // 3 rows = 300pts
+      // 4 rows = 400pts
+      game.score += completeRows * 100;
+      updateScoreUI();
+
+      // Remove this row and add a new empty row at the top
+      removeCompleteRow(i);
+      i--;
+    }
+  }
 }
 
 // clear complete lines
@@ -202,9 +251,9 @@ export function removeCompleteRow(rowIndex) {
   game.board.unshift(Array(10).fill(0));
 }
 function updateScoreUI() {
-    // scoreElement is the p tag inside the score-box
-    const scoreElement = document.getElementById('score-box')?.querySelector('p');
-    scoreElement.textContent = game.score;
+  // scoreElement is the p tag inside the score-box
+  const scoreElement = document.getElementById("score-box")?.querySelector("p");
+  scoreElement.textContent = game.score;
 }
 
 // Checks if we should solidify piece, returns boolean
@@ -235,10 +284,26 @@ export function printBoard() {
 }
 
 export function shiftPieceLeft() {
-  // Get the left most cells per row
-  let leftCells = getLeftCells(game.activePiece.shape[game.activePiece.rot]);
+  const shape = game.activePiece.shape[game.activePiece.rot];
+  let firstOccupiedColumn = 3; // Default to max possible
 
-  if (game.activePiece.col <= 0 || isAgainstPieceLeft(leftCells)) return;
+  // Scan 4x4 shape to find smallest column index of 1 (lets pieces with empty left columns shift to col 0)
+  for (let row = 0; row < 4; row++) {
+    for (let col = 0; col < 4; col++) {
+      if (shape[row][col] === 1) {
+        if (col < firstOccupiedColumn) {
+          firstOccupiedColumn = col;
+        }
+      }
+    }
+  }
+
+  // Boundary: don't go past left edge
+  if (game.activePiece.col + firstOccupiedColumn <= 0) return;
+
+  // Collision: don't move left into another piece (uses left-edge cells)
+  let leftCells = getLeftCells(shape);
+  if (isAgainstPieceLeft(leftCells)) return;
 
   // Erase the current piece off the board
   for (let i = 0; i < 4; i++) {
@@ -251,6 +316,7 @@ export function shiftPieceLeft() {
 
   game.activePiece.col -= 1; // move left
 
+  // Redraw the piece
   for (let i = 0; i < 4; i++) {
     for (let j = 0; j < 4; j++) {
       if (game.activePiece.shape[game.activePiece.rot][i][j] === 1) {
@@ -317,6 +383,48 @@ let pieceLength = getPieceWidth(game.activePiece.shape[game.activePiece.rot]);
       }
     }
   }
+}
+
+export function startTimer() {
+  if (game.timer.isRunning) return;
+  
+  game.timer.isRunning = true;
+  game.timer.startTime = Date.now() - game.timer.elapsed;
+  
+  game.timer.intervalId = setInterval(() => {
+    game.timer.elapsed = Date.now() - game.timer.startTime;
+    updateTimerUI();
+  }, 1000);
+}
+
+export function pauseTimer() {
+  if (!game.timer.isRunning) return;
+  
+  game.timer.isRunning = false;
+  clearInterval(game.timer.intervalId);
+  game.timer.intervalId = null;
+}
+
+export function stopTimer() {
+  pauseTimer();
+  game.timer.elapsed = 0;
+  updateTimerUI();
+}
+
+export function resetTimer() {
+  stopTimer();
+  startTimer();
+}
+
+function updateTimerUI() {
+  const timerElement = document.getElementById('time-box')?.querySelector('p');
+  if (!timerElement) return;
+  
+  const totalTimeInSeconds = Math.floor(game.timer.elapsed / 1000);
+  const minutes = Math.floor(totalTimeInSeconds / 60);
+  const seconds = totalTimeInSeconds % 60;
+  
+  timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }
 
 // get right pieces
