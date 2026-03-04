@@ -27,20 +27,28 @@ export async function getHighScores(){
     });
 
     const data = await response.json();
+    console.log("getHighScores response:", data);
+
+    if (!response.ok) {
+        console.error("getHighScores failed:", response.status, data);
+        return [];
+    }
+
     return data;
 }
 
-export async function saveHighScore(){
+export async function saveHighScore(initials, score){
     const res = await fetch("https://kspvngepugooryvwkyjw.supabase.co/functions/v1/saveHighScore",
     {
         method: "POST",
-        headers: {"Authorization": bearerToken},
+        headers: {
+            "Authorization": bearerToken,
+            "Content-Type": "application/json",
+        },
         credentials: "include",
-        body: JSON.stringify({
-            "initials": "TST",
-            "score": 100
-            })
+        body: JSON.stringify({ initials, score })
     });
-    const data = res.json();
+    const data = await res.json();
+    return data;
 }
 
