@@ -11,13 +11,39 @@
   <body>
     <h1 class="title">TECH CLUB TETRIS</h1>
     <div class="game-container">
-<!-- </body> -->
-      <div id="score-box" class="score-box">SCORE:
+      <div id="score-box" class="score-box">SCORE
         <p>0</p>
       </div>
-      <div id="time=box" class="time-box">TIME</div>
+      <div id="time-box" class="time-box">TIME
+        <p>0:00</p>
+      </div>
       <div id="board" class="board" aria-label="Playfield" role="grid"></div>
-      <div id="next-peice-box" class="next-peice-box">NEXT</div>
+      <div id="next-peice-box" class="next-peice-box">NEXT
+        <div id="mini" class="mini"></div>
+      </div>
+    </div>
+
+
+    <div id="gameOverPopup" class="popup hidden">
+      <div class="popup-content">
+        <h2>Game Over!</h2>
+        <p id="finalScore">Score: 0</p>
+
+        <div id="submitScoreSection" class="hidden">
+          <label for="initialsInput">Enter Initials:</label>
+          <input id="initialsInput" type="text" maxlength="3" placeholder="AAA" />
+          <button id="submitScoreBtn">Submit Score</button>
+        </div>
+
+        <div id="highScores">
+          <h3>High Scores</h3>
+          <ol id="highScoreList">
+            <!-- scores injected here -->
+          </ol>
+        </div>
+
+        <button id="playAgainBtn">Play Again</button>
+      </div>
     </div>
 
 

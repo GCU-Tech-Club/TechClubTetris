@@ -61,3 +61,20 @@ export function playAgain() {
 }
 
 document.getElementById('playAgainBtn').addEventListener('click', playAgain);
+
+
+const nextPieceGrid = document.getElementById("mini");
+
+export const nextPieceCells = [];
+for (let r = 0; r < 4; r++) {
+  const row = [];
+  for (let c = 0; c < 4; c++) {
+    const cell = document.createElement("div");
+    cell.className = "cell";
+    cell.style.minWidth = "0";
+    cell.style.minHeight = "0";
+    nextPieceGrid.appendChild(cell);
+    row.push(cell);
+  }
+  nextPieceCells.push(row);
+}
