@@ -30,11 +30,10 @@ function paintBoard() {
 }
 spawnPiece("T");
 const gameInterval = setInterval(() => {
-  // do gravity
-  // solidify pieces
+  if (game.isOver) {
+    clearInterval(gameInterval);
+    return;
+  }
   shouldSpawnNewPieceAndShiftPieceDown();
-  // update score
-  // paint board
   paintBoard();
-  console.log(game.board);
 }, 200);

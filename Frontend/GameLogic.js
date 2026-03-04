@@ -8,6 +8,7 @@ export const game = {
   board: Array.from({ length: 20 }, () => Array(10).fill(0)),
   activePiece: null,
   score: 0,
+  isOver: false,
 };
 
 export function getGameState() {
@@ -18,24 +19,11 @@ export function shouldSpawnNewPieceAndShiftPieceDown() {
   let shouldSpawnNewPiece = shiftPieceDown();
   if (shouldSpawnNewPiece === -1) {
     const pieces = ["T", "L", "O", "I", "S", "Z", "J"];
-    let randomPieceSelect = Math.floor(Math.random() * 6);
+    let randomPieceSelect = Math.floor(Math.random() * 7);
     spawnPiece(pieces[randomPieceSelect]);
   }
 
   return shouldSpawnNewPiece;
-}
-
-// Check if pieces have reached the top of the board
-function isPieceAtTop() {
-  // Check if there are any solidified blocks (1s) in the top 2 rows
-  for (let i = 0; i < 1; i++) {
-    for (let j = 0; j < 10; j++) {
-      if (game.board[i][j] === 1) {
-        return true;
-      }
-    }
-  }
-  return false;
 }
 
 // Clear the entire game board and reset it to all 0s
@@ -48,13 +36,7 @@ export function clearBoard() {
 
 // Create a new active piece
 export function spawnPiece(tetrominoKey) {
-  // Check if pieces have reached the top; if so, clear the board
-  if (isPieceAtTop()) {
-    showGameOver(game.score);
-    clearBoard();
-  }
-   
-  const tetromino = TETROMINOS[tetrominoKey]; // 'T'
+  const tetromino = TETROMINOS[tetrominoKey];
   const newPiece = {
     shape: tetromino["shapes"],
     rot: 0,
@@ -64,6 +46,8 @@ export function spawnPiece(tetrominoKey) {
   };
 
   if (!canPlace(newPiece.shape[newPiece.rot], newPiece.row, newPiece.col)) {
+    game.isOver = true;
+    showGameOver(game.score);
     return false;
   }
 
