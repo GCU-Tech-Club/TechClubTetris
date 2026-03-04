@@ -323,7 +323,7 @@ export function shiftPieceRight() {
 }
 
 // THESE ARE FOR TESTING DELETE THEM WHEN DONE //
-window.game = game;
-window.removeCompleteRow = removeCompleteRow;
-window.updateScore = updateScore;
+// window.game = game;
+// window.removeCompleteRow = removeCompleteRow;
+// window.updateScore = updateScore;
 // THESE ARE FOR TESTING DELETE THEM DONE //

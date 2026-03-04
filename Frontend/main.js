@@ -1,3 +1,5 @@
+import { getHighScores } from "./ScoresDataAccess.js";
+
 const COLS = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--cols')) || 10;
 const ROWS = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--rows')) || 20;
 
@@ -18,9 +20,18 @@ for (let r = 0; r < ROWS; r++) {
     cells.push(row);
 }
 
-export function showGameOver(score) {
+export async function showGameOver(score) {
     document.getElementById('finalScore').textContent = `Score: ${score}`;
     document.getElementById('gameOverPopup').classList.remove('hidden');
+
+    const scores = await getHighScores();
+    const list = document.getElementById('highScoreList');
+    list.innerHTML = '';
+    scores.forEach(entry => {
+        const li = document.createElement('li');
+        li.textContent = `${entry.initials} — ${entry.score}`;
+        list.appendChild(li);
+    });
 }   
 
 export function playAgain() {

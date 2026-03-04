@@ -27,8 +27,7 @@ export async function getHighScores(){
     });
 
     const data = await response.json();
-    console.log(data);
-    console.log(document.cookie);
+    return data;
 }
 
 export async function saveHighScore(){
