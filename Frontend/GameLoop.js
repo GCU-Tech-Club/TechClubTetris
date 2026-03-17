@@ -28,11 +28,27 @@ function paintBoard() {
   }
 }
 spawnPiece("T");
-const gameInterval = setInterval(() => {
+
+//reusable function for game loop, will be called every tick
+function tick() {
   if (game.isOver) {
     clearInterval(gameInterval);
     return;
   }
   shouldSpawnNewPieceAndShiftPieceDown();
   paintBoard();
-}, 200);
+}
+export let gameInterval = setInterval(tick, 200);
+
+//pause abd resume functions
+export function pauseGame() {
+  clearInterval(gameInterval);
+  document.getElementById('pausePopup').classList.remove('hidden')
+}
+
+export function resumeGame() {
+  document.getElementById('pausePopup').classList.add('hidden')
+  gameInterval = setInterval(tick, 200);
+}
+
+
