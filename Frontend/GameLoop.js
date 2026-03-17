@@ -38,7 +38,8 @@ function tick() {
   shouldSpawnNewPieceAndShiftPieceDown();
   paintBoard();
 }
-export let gameInterval = setInterval(tick, 200);
+
+let gameInterval = setInterval(tick, 200);
 
 //pause abd resume functions
 export function pauseGame() {
