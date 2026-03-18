@@ -20,7 +20,7 @@ function paintBoard() {
       }
     }
   }
-  
+
   // piece shadow
   // calculate how far the whole piece can drop
   let dropDistance = 0;
@@ -78,8 +78,7 @@ function paintBoard() {
           shadowCol >= 0 &&
           shadowCol < 10
         ) {
-          cells[shadowRow][shadowCol].style.backgroundColor =
-            "var(--shadow)";
+          cells[shadowRow][shadowCol].style.backgroundColor = "var(--shadow)";
         }
       }
     }
@@ -87,13 +86,13 @@ function paintBoard() {
 
   // pieces
   for (let i = 0; i < 20; i++) {
-      for (let j = 0; j < 10; j++) {
-        if (game.board[i][j] === 1) {
-          cells[i][j].style.backgroundColor = "var(--filled)";
-        }
+    for (let j = 0; j < 10; j++) {
+      if (game.board[i][j] === 1) {
+        cells[i][j].style.backgroundColor = "var(--filled)";
       }
     }
   }
+}
 startTimer();
 setNextPiece();
 spawnPiece(getNextPiece());
