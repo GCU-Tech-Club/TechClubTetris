@@ -447,6 +447,26 @@ export function resetTimer() {
   startTimer();
 }
 
+export function resetGame() {
+  for (let r = 0; r < game.board.length; r++) {
+    for (let c = 0; c < game.board[r].length; c++) {
+      game.board[r][c] = 0;
+    }
+  }
+  game.activePiece = null;
+
+  resetTimer();
+
+  if (game.score > 0) {
+    game.score = 0;
+    updateScoreUI();
+  }
+
+  setNextPiece();
+  spawnPiece(getNextPiece());
+  renderNextPiece(nextPieceCells);
+}
+
 function updateTimerUI() {
   const timerElement = document.getElementById("time-box")?.querySelector("p");
   if (!timerElement) return;
