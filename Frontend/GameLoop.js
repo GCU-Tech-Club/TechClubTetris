@@ -11,7 +11,7 @@ import { cells, nextPieceCells } from "./main.js";
 
 // Piece Test (use debugger to see board, click on game then board to see the board)
 
-function paintBoard() {
+export function paintBoard() {
   // clear board
   for (let i = 0; i < 20; i++) {
     for (let j = 0; j < 10; j++) {
