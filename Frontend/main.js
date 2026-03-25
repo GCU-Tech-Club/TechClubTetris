@@ -1,3 +1,9 @@
+import { createSession, getHighScores, saveHighScore } from "./ScoresDataAccess.js";
+
+// createSession() will be awaited at the bottom of the file to ensure exports are initialized.
+
+let currentScore = 0;
+
 const COLS =
   parseInt(
     getComputedStyle(document.documentElement).getPropertyValue("--cols"),
@@ -37,5 +43,43 @@ for (let r = 0; r < 4; r++) {
     nextPieceGrid.appendChild(cell);
     row.push(cell);
   }
-  nextPieceCells.push(row);
+  nextPieceCells.push(row);}
+
+export async function renderHighScores(list) {
+    const data = await getHighScores();
+    const scores = Array.isArray(data) ? data : (data.scores ?? data.data ?? []);
+    list.innerHTML = '';
+    scores.forEach(entry => {
+        const li = document.createElement('li');
+        li.textContent = `${entry.initials} — ${entry.score}`;
+        list.appendChild(li);
+    });
 }
+
+export async function showGameOver(score) {
+    currentScore = score;
+    document.getElementById('finalScore').textContent = `Score: ${score}`;
+    document.getElementById('submitScoreSection').classList.remove('hidden');
+    document.getElementById('gameOverPopup').classList.remove('hidden');
+    await renderHighScores(document.getElementById('gameOverPopup').querySelector('ol'));
+}
+
+async function submitScore() {
+    const initials = document.getElementById('initialsInput').value.trim().toUpperCase();
+    if (!initials) return;
+
+    await saveHighScore(initials, currentScore);
+    document.getElementById('submitScoreSection').classList.add('hidden');
+    await renderHighScores(document.getElementById('gameOverPopup').querySelector('ol'));
+}
+
+document.getElementById('submitScoreBtn').addEventListener('click', submitScore);   
+
+export function playAgain() {
+    document.getElementById('gameOverPopup').classList.add('hidden');
+    location.reload();
+}
+
+document.getElementById('playAgainBtn').addEventListener('click', playAgain);
+
+await createSession();

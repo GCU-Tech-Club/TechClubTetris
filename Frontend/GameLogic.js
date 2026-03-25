@@ -1,5 +1,5 @@
 import { TETROMINOS } from "./Pieces.js";
-import { nextPieceCells } from "./main.js";
+import { showGameOver } from "./main.js";
 
 console.log("this is where the board goes");
 console.log(TETROMINOS);
@@ -9,6 +9,7 @@ export const game = {
   activePiece: null,
   nextPiece: null,
   score: 0,
+  isOver: false,
   solidifyDelay: {
     tempStartTime: null,
     finalStartTime: null,
@@ -30,17 +31,26 @@ export function getGameState() {
 export function shouldSpawnNewPieceAndShiftPieceDown() {
   let shouldSpawnNewPiece = shiftPieceDown();
   if (shouldSpawnNewPiece === -1) {
-    spawnPiece(getNextPiece());
-    renderNextPiece(nextPieceCells);
+    const pieces = ["T", "L", "O", "I", "S", "Z", "J"];
+    let randomPieceSelect = Math.floor(Math.random() * 7);
+    spawnPiece(pieces[randomPieceSelect]);
   }
 
   return shouldSpawnNewPiece;
 }
 
+// Clear the entire game board and reset it to all 0s
+export function clearBoard() {
+  game.board = Array.from({ length: 20 }, () => Array(10).fill(0));
+  game.activePiece = null;
+  game.score = 0;
+  updateScoreUI();
+}
+
 // Create a new active piece
 export function spawnPiece(tetrominoKey) {
-  const tetromino = TETROMINOS[tetrominoKey]; // 'T'
-  game.activePiece = {
+  const tetromino = TETROMINOS[tetrominoKey];
+  const newPiece = {
     shape: tetromino["shapes"],
     rot: 0,
     row: 0,
@@ -49,6 +59,14 @@ export function spawnPiece(tetrominoKey) {
   };
 
   resetTempSolidifyDelay();
+
+  if (!canPlace(newPiece.shape[newPiece.rot], newPiece.row, newPiece.col)) {
+    game.isOver = true;
+    showGameOver(game.score);
+    return false;
+  }
+
+  game.activePiece = newPiece;
 
   if (game.activePiece != null) {
     for (let i = 0; i < 4; i++) {
@@ -60,8 +78,8 @@ export function spawnPiece(tetrominoKey) {
       }
     }
   }
+  return true;
 }
-
 // Generate a random tetromino key
 export function getRandomPieceKey() {
   const pieces = ["T", "L", "O", "I", "S", "Z", "J"];
@@ -542,9 +560,9 @@ function isAgainstPieceRight(leftCells) {
 }
 
 // THESE ARE FOR TESTING DELETE THEM WHEN DONE //
-window.game = game;
-window.removeCompleteRow = removeCompleteRow;
-window.updateScore = updateScore;
+// window.game = game;
+// window.removeCompleteRow = removeCompleteRow;
+// window.updateScore = updateScore;
 // THESE ARE FOR TESTING DELETE THEM DONE //
 
 function getPieceWidth(arr) {

@@ -1,5 +1,7 @@
 import {
+  shiftPieceDown,
   rotatePiece,
+  printBoard,
   game,
   shiftPieceLeft,
   shiftPieceRight,
@@ -7,7 +9,7 @@ import {
   shouldSpawnNewPieceAndShiftPieceDown,
   resetGame,
 } from "./GameLogic.js";
-import { paintBoard } from "./GameLoop.js";
+import { paintBoard, pauseGame, resumeGame } from "./GameLoop.js";
 
 // Shift left with A or arrow left key
 addEventListener("keydown", function (event) {
@@ -58,3 +60,23 @@ addEventListener("click", function (event) {
     resetGame();
   }
 });
+
+// Pause game with P key
+addEventListener("keydown", function (event) {
+    if (event.code === "KeyP") {
+        pauseGame();
+        event.preventDefault();
+    }
+});
+
+// Resume game with Escape key
+addEventListener("keydown", function (event) {
+    if (event.code === "Escape") {
+        resumeGame();
+        event.preventDefault();
+    }
+});
+
+// Pause and Resume buttons
+document.getElementById('pauseBtn').addEventListener('click', pauseGame);
+document.getElementById('resumeBtn').addEventListener('click', resumeGame);
