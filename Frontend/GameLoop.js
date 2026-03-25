@@ -98,11 +98,7 @@ setNextPiece();
 spawnPiece(getNextPiece());
 renderNextPiece(nextPieceCells);
 setInterval(() => {
-  // do gravity
-  // solidify pieces
   shouldSpawnNewPieceAndShiftPieceDown();
   renderNextPiece(nextPieceCells);
-  // update score
-  // paint board
   paintBoard();
 }, 200);
