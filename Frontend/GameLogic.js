@@ -10,6 +10,18 @@ export const game = {
   nextPiece: null,
   score: 0,
   isOver: false,
+  solidifyDelay: {
+    tempStartTime: null,
+    finalStartTime: null,
+    tempDuration: 300,
+    finalDuration: 700,
+  },
+  timer: {
+    startTime: null,
+    elapsed: 0, // milliseconds
+    isRunning: false,
+    intervalId: null,
+  },
 };
 
 export function getGameState() {
@@ -45,6 +57,8 @@ export function spawnPiece(tetrominoKey) {
     col: 3,
     id: tetromino["id"],
   };
+
+  resetTempSolidifyDelay();
 
   if (!canPlace(newPiece.shape[newPiece.rot], newPiece.row, newPiece.col)) {
     game.isOver = true;
@@ -134,6 +148,7 @@ export function rotatePiece() {
       game.activePiece.rot = nextRot;
       game.activePiece.row = row + shift;
       appliedShift = shift;
+      resetTempSolidifyDelay();
       break;
     }
   }
@@ -193,20 +208,40 @@ export function shiftPieceDown() {
 
   // If we should solidify, set the active piece to null
   if (solidifyPiece()) {
-    // Put the new piece on the board where it currently is
+    // Start delay
+    startSolidifyDelay();
+    // If the delay is expired, solidify the piece
+    if (isTempSolidifyDelayExpired() || isFinalSolidifyDelayExpired()) {
+      // Put the new piece on the board where it currently is
+      for (let i = 0; i < 4; i++) {
+        for (let j = 0; j < 4; j++) {
+          if (game.activePiece.shape[game.activePiece.rot][i][j] === 1)
+            game.board[game.activePiece.row + i][game.activePiece.col + j] = 1;
+        }
+      }
+      game.activePiece = null;
+      resetTempSolidifyDelay();
+      resetFinalSolidifyDelay();
+      // Update the score
+      updateScore();
+
+      return -1;
+    }
+
+    // If the delay is still active, redraw the piece in the same place
     for (let i = 0; i < 4; i++) {
       for (let j = 0; j < 4; j++) {
-        if (game.activePiece.shape[game.activePiece.rot][i][j] === 1)
+        if (game.activePiece.shape[game.activePiece.rot][i][j] === 1) {
           game.board[game.activePiece.row + i][game.activePiece.col + j] = 1;
+        }
       }
     }
-    game.activePiece = null;
 
-    // Update the score
-    updateScore();
-
-    return -1;
+    return 0; // landed but not solidified yet
   }
+
+  // Piece can still move down, so cancel solidify delay
+  resetTempSolidifyDelay();
 
   // Move the piece down if we shouldn't solidify
   // Increment the row to move the active piece down
@@ -327,6 +362,7 @@ export function shiftPieceLeft() {
   }
 
   game.activePiece.col -= 1; // move left
+  resetTempSolidifyDelay();
 
   // Redraw the piece
   for (let i = 0; i < 4; i++) {
@@ -387,6 +423,7 @@ export function shiftPieceRight() {
   }
 
   game.activePiece.col += 1; // move right
+  resetTempSolidifyDelay();
 
   for (let i = 0; i < 4; i++) {
     for (let j = 0; j < 4; j++) {
@@ -428,6 +465,26 @@ export function resetTimer() {
   startTimer();
 }
 
+export function resetGame() {
+  for (let r = 0; r < game.board.length; r++) {
+    for (let c = 0; c < game.board[r].length; c++) {
+      game.board[r][c] = 0;
+    }
+  }
+  game.activePiece = null;
+
+  resetTimer();
+
+  if (game.score > 0) {
+    game.score = 0;
+    updateScoreUI();
+  }
+
+  setNextPiece();
+  spawnPiece(getNextPiece());
+  renderNextPiece(nextPieceCells);
+}
+
 function updateTimerUI() {
   const timerElement = document.getElementById("time-box")?.querySelector("p");
   if (!timerElement) return;
@@ -437,6 +494,43 @@ function updateTimerUI() {
   const seconds = totalTimeInSeconds % 60;
 
   timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, "0")}`;
+}
+
+// Delay helper functions
+function startSolidifyDelay() {
+  if (game.solidifyDelay.tempStartTime === null) {
+    game.solidifyDelay.tempStartTime = Date.now();
+  }
+
+  if (game.solidifyDelay.finalStartTime === null) {
+    game.solidifyDelay.finalStartTime = Date.now();
+  }
+}
+
+function resetTempSolidifyDelay() {
+  game.solidifyDelay.tempStartTime = null;
+}
+
+function resetFinalSolidifyDelay() {
+  game.solidifyDelay.finalStartTime = null;
+}
+
+function isTempSolidifyDelayExpired() {
+  if (game.solidifyDelay.tempStartTime === null) return false;
+
+  return (
+    Date.now() - game.solidifyDelay.tempStartTime >=
+    game.solidifyDelay.tempDuration
+  );
+}
+
+function isFinalSolidifyDelayExpired() {
+  if (game.solidifyDelay.finalStartTime === null) return false;
+
+  return (
+    Date.now() - game.solidifyDelay.finalStartTime >=
+    game.solidifyDelay.finalDuration
+  );
 }
 
 // get right pieces

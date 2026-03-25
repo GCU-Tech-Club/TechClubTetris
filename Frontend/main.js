@@ -1,27 +1,33 @@
 import { createSession, getHighScores, saveHighScore } from "./ScoresDataAccess.js";
 
-createSession();
+// createSession() will be awaited at the bottom of the file to ensure exports are initialized.
 
 let currentScore = 0;
 
-const COLS = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--cols')) || 10;
-const ROWS = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--rows')) || 20;
+const COLS =
+  parseInt(
+    getComputedStyle(document.documentElement).getPropertyValue("--cols"),
+  ) || 10;
+const ROWS =
+  parseInt(
+    getComputedStyle(document.documentElement).getPropertyValue("--rows"),
+  ) || 20;
 
-const boardEl = document.getElementById('board');
+const boardEl = document.getElementById("board");
 
 export const cells = [];
 for (let r = 0; r < ROWS; r++) {
-    const row = [];
-    for (let c = 0; c < COLS; c++) {
-        const cell = document.createElement('div'); 
-        cell.className = 'cell'; 
-        cell.setAttribute('role', 'gridcell');
-        cell.dataset.row = r;
-        cell.dataset.col = c; 
-        boardEl.appendChild(cell);
-        row.push(cell);
-    }
-    cells.push(row);
+  const row = [];
+  for (let c = 0; c < COLS; c++) {
+    const cell = document.createElement("div");
+    cell.className = "cell";
+    cell.setAttribute("role", "gridcell");
+    cell.dataset.row = r;
+    cell.dataset.col = c;
+    boardEl.appendChild(cell);
+    row.push(cell);
+  }
+  cells.push(row);
 }
 
 const nextPieceGrid = document.getElementById("mini");
@@ -64,7 +70,7 @@ async function submitScore() {
 
     await saveHighScore(initials, currentScore);
     document.getElementById('submitScoreSection').classList.add('hidden');
-    await renderHighScores();
+    await renderHighScores(document.getElementById('gameOverPopup').querySelector('ol'));
 }
 
 document.getElementById('submitScoreBtn').addEventListener('click', submitScore);   
@@ -75,3 +81,5 @@ export function playAgain() {
 }
 
 document.getElementById('playAgainBtn').addEventListener('click', playAgain);
+
+await createSession();

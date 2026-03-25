@@ -1,7 +1,12 @@
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="A Tetris game built by the GCU Software Development Committee!"
+    />
     <title>Tetris</title>
     <link rel="stylesheet" href="index.css" />
     <script type="module" src="main.js" defer></script>
@@ -11,18 +16,22 @@
   <body>
     <h1 class="title">TECH CLUB TETRIS</h1>
     <div class="game-container">
-<!-- </body> -->
-      <div id="score-box" class="score-box">SCORE
+      <div id="score-box" class="score-box">
+        SCORE
         <p>0</p>
       </div>
-      <div id="time-box" class="time-box">TIME
+      <div id="time-box" class="time-box">
+        TIME
         <p>0:00</p>
       </div>
+      <button id="reset-button" class="reset-button" type="button">
+        RESET
+      </button>
       <div id="board" class="board" aria-label="Playfield" role="grid"></div>
-      <div id="next-peice-box" class="next-peice-box">NEXT
-         <div id="mini" class="mini"></div>
+      <div id="next-peice-box" class="next-peice-box">
+        NEXT
+        <div id="mini" class="mini"></div>
       </div>
-       
     </div>
 
 
