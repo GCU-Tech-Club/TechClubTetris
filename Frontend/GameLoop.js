@@ -7,7 +7,7 @@ import {
   spawnPiece,
   getNextPiece,
 } from "./GameLogic.js";
-import { cells, nextPieceCells } from "./main.js";
+import { cells, nextPieceCells, renderHighScores } from "./main.js";
 
 // Piece Test (use debugger to see board, click on game then board to see the board)
 
@@ -36,15 +36,19 @@ function tick() {
     return;
   }
   shouldSpawnNewPieceAndShiftPieceDown();
+  renderNextPiece(nextPieceCells);
   paintBoard();
 }
 
+
+
 let gameInterval = setInterval(tick, 200);
 
-//pause abd resume functions
+//pause and resume functions
 export function pauseGame() {
   clearInterval(gameInterval);
   document.getElementById('pausePopup').classList.remove('hidden')
+  renderHighScores(document.getElementById('pausePopup').querySelector('ol'));
 }
 
 export function resumeGame() {

@@ -1,5 +1,5 @@
 import { TETROMINOS } from "./Pieces.js";
-import { showGameOver } from "./main.js";   
+import { showGameOver } from "./main.js";
 
 console.log("this is where the board goes");
 console.log(TETROMINOS);
@@ -65,6 +65,48 @@ export function spawnPiece(tetrominoKey) {
     }
   }
   return true;
+}
+// Generate a random tetromino key
+export function getRandomPieceKey() {
+  const pieces = ["T", "L", "O", "I", "S", "Z", "J"];
+  const randomIndex = Math.floor(Math.random() * pieces.length);
+  return pieces[randomIndex];
+}
+
+// Set the next piece
+export function setNextPiece() {
+  game.nextPiece = getRandomPieceKey();
+}
+
+// Get the current next piece and generate a new one
+export function getNextPiece() {
+  const piece = game.nextPiece;
+  setNextPiece();
+  return piece;
+}
+
+// Render the next piece in the preview box
+export function renderNextPiece(nextPieceCells) {
+  if (!game.nextPiece) return;
+
+  const tetromino = TETROMINOS[game.nextPiece];
+  const shape = tetromino.shapes[0]; // Show first rotation
+
+  // Clear all cells
+  for (let r = 0; r < 4; r++) {
+    for (let c = 0; c < 4; c++) {
+      nextPieceCells[r][c].style.backgroundColor = "transparent";
+    }
+  }
+
+  // Render the piece
+  for (let r = 0; r < 4; r++) {
+    for (let c = 0; c < 4; c++) {
+      if (shape[r][c] === 1) {
+        nextPieceCells[r][c].style.backgroundColor = "var(--filled)";
+      }
+    }
+  }
 }
 
 // Change the active piece to the next rotation
@@ -325,7 +367,7 @@ function isAgainstPieceLeft(leftCells) {
 }
 
 export function shiftPieceRight() {
-let pieceLength = getPieceWidth(game.activePiece.shape[game.activePiece.rot]);
+  let pieceLength = getPieceWidth(game.activePiece.shape[game.activePiece.rot]);
 
   let rightCells = getRightCells(game.activePiece.shape[game.activePiece.rot]);
   // Check only right edge
@@ -357,10 +399,10 @@ let pieceLength = getPieceWidth(game.activePiece.shape[game.activePiece.rot]);
 
 export function startTimer() {
   if (game.timer.isRunning) return;
-  
+
   game.timer.isRunning = true;
   game.timer.startTime = Date.now() - game.timer.elapsed;
-  
+
   game.timer.intervalId = setInterval(() => {
     game.timer.elapsed = Date.now() - game.timer.startTime;
     updateTimerUI();
@@ -369,7 +411,7 @@ export function startTimer() {
 
 export function pauseTimer() {
   if (!game.timer.isRunning) return;
-  
+
   game.timer.isRunning = false;
   clearInterval(game.timer.intervalId);
   game.timer.intervalId = null;
@@ -387,14 +429,14 @@ export function resetTimer() {
 }
 
 function updateTimerUI() {
-  const timerElement = document.getElementById('time-box')?.querySelector('p');
+  const timerElement = document.getElementById("time-box")?.querySelector("p");
   if (!timerElement) return;
-  
+
   const totalTimeInSeconds = Math.floor(game.timer.elapsed / 1000);
   const minutes = Math.floor(totalTimeInSeconds / 60);
   const seconds = totalTimeInSeconds % 60;
-  
-  timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+  timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, "0")}`;
 }
 
 // get right pieces
@@ -431,25 +473,25 @@ function isAgainstPieceRight(leftCells) {
 
 function getPieceWidth(arr) {
   const cols = Array(arr[0].length).fill(0);
-  
-for (let r = 0; r < arr.length; r++) {
-  for (let c = 0; c < arr[r].length; c++) {
-    if (arr[r][c] === 1) {
-      cols[c] = 1;
+
+  for (let r = 0; r < arr.length; r++) {
+    for (let c = 0; c < arr[r].length; c++) {
+      if (arr[r][c] === 1) {
+        cols[c] = 1;
+      }
     }
   }
-}
 
-let maxWidth = 0;
-let current = 0;
+  let maxWidth = 0;
+  let current = 0;
 
-for (let i = 0; i < cols.length; i++) {
-  if (cols[i] === 1) {
-    current++;
-    if (current > maxWidth) maxWidth = current;
-  } else {
-    current = 0;
+  for (let i = 0; i < cols.length; i++) {
+    if (cols[i] === 1) {
+      current++;
+      if (current > maxWidth) maxWidth = current;
+    } else {
+      current = 0;
+    }
   }
-}
-return maxWidth;
+  return maxWidth;
 }

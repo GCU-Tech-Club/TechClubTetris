@@ -24,10 +24,24 @@ for (let r = 0; r < ROWS; r++) {
     cells.push(row);
 }
 
-async function renderHighScores() {
+const nextPieceGrid = document.getElementById("mini");
+
+export const nextPieceCells = [];
+for (let r = 0; r < 4; r++) {
+  const row = [];
+  for (let c = 0; c < 4; c++) {
+    const cell = document.createElement("div");
+    cell.className = "cell";
+    cell.style.minWidth = "0";
+    cell.style.minHeight = "0";
+    nextPieceGrid.appendChild(cell);
+    row.push(cell);
+  }
+  nextPieceCells.push(row);}
+
+export async function renderHighScores(list) {
     const data = await getHighScores();
     const scores = Array.isArray(data) ? data : (data.scores ?? data.data ?? []);
-    const list = document.getElementById('highScoreList');
     list.innerHTML = '';
     scores.forEach(entry => {
         const li = document.createElement('li');
@@ -41,7 +55,7 @@ export async function showGameOver(score) {
     document.getElementById('finalScore').textContent = `Score: ${score}`;
     document.getElementById('submitScoreSection').classList.remove('hidden');
     document.getElementById('gameOverPopup').classList.remove('hidden');
-    await renderHighScores();
+    await renderHighScores(document.getElementById('gameOverPopup').querySelector('ol'));
 }
 
 async function submitScore() {
