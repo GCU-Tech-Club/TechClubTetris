@@ -31,12 +31,11 @@ startTimer();
 setNextPiece();
 spawnPiece(getNextPiece());
 renderNextPiece(nextPieceCells);
-const gameInterval = setInterval(() => {
-  if (game.isOver) {
-    clearInterval(gameInterval);
-    return;
-  }
+setInterval(() => {
+  // do gravity
+  // solidify pieces
   shouldSpawnNewPieceAndShiftPieceDown();
+  renderNextPiece(nextPieceCells);
   // update score
   // paint board
   paintBoard();
