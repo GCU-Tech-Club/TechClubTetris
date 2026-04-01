@@ -97,13 +97,13 @@ startTimer();
 setNextPiece();
 spawnPiece(getNextPiece());
 renderNextPiece(nextPieceCells);
-
 //reusable function for game loop, will be called every tick
 function tick() {
   if (game.isOver) {
     clearInterval(gameInterval);
     return;
   }
+
   shouldSpawnNewPieceAndShiftPieceDown();
   renderNextPiece(nextPieceCells);
   paintBoard();

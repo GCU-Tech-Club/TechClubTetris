@@ -30,6 +30,7 @@ for (let r = 0; r < ROWS; r++) {
   cells.push(row);
 }
 
+
 const nextPieceGrid = document.getElementById("mini");
 
 export const nextPieceCells = [];
@@ -55,7 +56,6 @@ export async function renderHighScores(list) {
         list.appendChild(li);
     });
 }
-
 export async function showGameOver(score) {
     currentScore = score;
     document.getElementById('finalScore').textContent = `Score: ${score}`;
@@ -83,3 +83,4 @@ export function playAgain() {
 document.getElementById('playAgainBtn').addEventListener('click', playAgain);
 
 await createSession();
+

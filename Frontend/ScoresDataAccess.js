@@ -32,6 +32,7 @@ export async function getHighScores() {
       },
     );
 
+
     const data = await response.json();
     console.log("getHighScores response:", data);
 
@@ -67,4 +68,5 @@ export async function saveHighScore(initials, score) {
     console.error("saveHighScore failed:", error);
     return null;
   }
+
 }

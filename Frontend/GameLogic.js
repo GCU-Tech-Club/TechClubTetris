@@ -1,4 +1,5 @@
 import { TETROMINOS } from "./Pieces.js";
+import { nextPieceCells } from "./main.js";
 import { showGameOver } from "./main.js";
 
 console.log("this is where the board goes");
@@ -20,7 +21,7 @@ export const game = {
     startTime: null,
     elapsed: 0, // milliseconds
     isRunning: false,
-    intervalId: null,
+    intervalId: null
   },
 };
 
@@ -31,9 +32,8 @@ export function getGameState() {
 export function shouldSpawnNewPieceAndShiftPieceDown() {
   let shouldSpawnNewPiece = shiftPieceDown();
   if (shouldSpawnNewPiece === -1) {
-    const pieces = ["T", "L", "O", "I", "S", "Z", "J"];
-    let randomPieceSelect = Math.floor(Math.random() * 7);
-    spawnPiece(pieces[randomPieceSelect]);
+    spawnPiece(getNextPiece());
+    renderNextPiece(nextPieceCells);
   }
 
   return shouldSpawnNewPiece;
@@ -62,6 +62,7 @@ export function spawnPiece(tetrominoKey) {
 
   if (!canPlace(newPiece.shape[newPiece.rot], newPiece.row, newPiece.col)) {
     game.isOver = true;
+    pauseTimer();
     showGameOver(game.score);
     return false;
   }
@@ -78,7 +79,6 @@ export function spawnPiece(tetrominoKey) {
       }
     }
   }
-  return true;
 }
 // Generate a random tetromino key
 export function getRandomPieceKey() {
@@ -122,6 +122,11 @@ export function renderNextPiece(nextPieceCells) {
     }
   }
 }
+
+
+
+
+
 
 // Change the active piece to the next rotation
 export function rotatePiece() {
