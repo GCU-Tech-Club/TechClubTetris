@@ -1,5 +1,6 @@
 import { TETROMINOS } from "./Pieces.js";
 import { nextPieceCells } from "./main.js";
+import { showGameOver } from "./main.js";   
 
 console.log("this is where the board goes");
 console.log(TETROMINOS);
@@ -19,8 +20,9 @@ export const game = {
     startTime: null,
     elapsed: 0, // milliseconds
     isRunning: false,
-    intervalId: null,
+    intervalId: null
   },
+  isOver: false,
 };
 
 export function getGameState() {
@@ -37,10 +39,18 @@ export function shouldSpawnNewPieceAndShiftPieceDown() {
   return shouldSpawnNewPiece;
 }
 
+// Clear the entire game board and reset it to all 0s
+export function clearBoard() {
+  game.board = Array.from({ length: 20 }, () => Array(10).fill(0));
+  game.activePiece = null;
+  game.score = 0;
+  updateScoreUI();
+}
+
 // Create a new active piece
 export function spawnPiece(tetrominoKey) {
-  const tetromino = TETROMINOS[tetrominoKey]; // 'T'
-  game.activePiece = {
+  const tetromino = TETROMINOS[tetrominoKey];
+  const newPiece = {
     shape: tetromino["shapes"],
     rot: 0,
     row: 0,
@@ -49,6 +59,15 @@ export function spawnPiece(tetrominoKey) {
   };
 
   resetTempSolidifyDelay();
+
+  if (!canPlace(newPiece.shape[newPiece.rot], newPiece.row, newPiece.col)) {
+    game.isOver = true;
+    pauseTimer();
+    showGameOver(game.score);
+    return false;
+  }
+
+  game.activePiece = newPiece;
 
   if (game.activePiece != null) {
     for (let i = 0; i < 4; i++) {
@@ -104,6 +123,11 @@ export function renderNextPiece(nextPieceCells) {
     }
   }
 }
+
+
+
+
+
 
 // Change the active piece to the next rotation
 export function rotatePiece() {
@@ -542,9 +566,9 @@ function isAgainstPieceRight(leftCells) {
 }
 
 // THESE ARE FOR TESTING DELETE THEM WHEN DONE //
-window.game = game;
-window.removeCompleteRow = removeCompleteRow;
-window.updateScore = updateScore;
+// window.game = game;
+// window.removeCompleteRow = removeCompleteRow;
+// window.updateScore = updateScore;
 // THESE ARE FOR TESTING DELETE THEM DONE //
 
 function getPieceWidth(arr) {
