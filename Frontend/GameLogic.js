@@ -1,6 +1,6 @@
 import { TETROMINOS } from "./Pieces.js";
 import { nextPieceCells } from "./main.js";
-import { showGameOver } from "./main.js";   
+import { showGameOver } from "./main.js";
 
 console.log("this is where the board goes");
 console.log(TETROMINOS);
@@ -10,6 +10,7 @@ export const game = {
   activePiece: null,
   nextPiece: null,
   score: 0,
+  isOver: false,
   solidifyDelay: {
     tempStartTime: null,
     finalStartTime: null,
@@ -22,7 +23,6 @@ export const game = {
     isRunning: false,
     intervalId: null
   },
-  isOver: false,
 };
 
 export function getGameState() {
@@ -80,7 +80,6 @@ export function spawnPiece(tetrominoKey) {
     }
   }
 }
-
 // Generate a random tetromino key
 export function getRandomPieceKey() {
   const pieces = ["T", "L", "O", "I", "S", "Z", "J"];
