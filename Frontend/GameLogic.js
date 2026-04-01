@@ -62,6 +62,7 @@ export function spawnPiece(tetrominoKey) {
 
   if (!canPlace(newPiece.shape[newPiece.rot], newPiece.row, newPiece.col)) {
     game.isOver = true;
+    pauseTimer();
     showGameOver(game.score);
     return false;
   }
