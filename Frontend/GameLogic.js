@@ -74,7 +74,8 @@ export function spawnPiece(tetrominoKey) {
       for (let j = 0; j < 4; j++) {
         // Inner loop for columns
         if (game.activePiece.shape[game.activePiece.rot][i][j] === 1) {
-          game.board[i + game.activePiece.row][j + game.activePiece.col] = 1;
+          game.board[i + game.activePiece.row][j + game.activePiece.col] =
+            game.activePiece.id;
         }
       }
     }
@@ -163,7 +164,7 @@ export function rotatePiece() {
     for (let i = 0; i < 4; i++) {
       for (let j = 0; j < 4; j++) {
         if (shape[game.activePiece.rot][i][j] === 1) {
-          game.board[row + i][col + j] = 1;
+          game.board[row + i][col + j] = game.activePiece.id;
         }
       }
     }
@@ -174,7 +175,8 @@ export function rotatePiece() {
   for (let i = 0; i < 4; i++) {
     for (let j = 0; j < 4; j++) {
       if (shape[game.activePiece.rot][i][j] === 1) {
-        game.board[game.activePiece.row + i][game.activePiece.col + j] = 1;
+        game.board[game.activePiece.row + i][game.activePiece.col + j] =
+            game.activePiece.id;
       }
     }
   }
@@ -221,7 +223,8 @@ export function shiftPieceDown() {
       for (let i = 0; i < 4; i++) {
         for (let j = 0; j < 4; j++) {
           if (game.activePiece.shape[game.activePiece.rot][i][j] === 1)
-            game.board[game.activePiece.row + i][game.activePiece.col + j] = 1;
+            game.board[game.activePiece.row + i][game.activePiece.col + j] =
+            game.activePiece.id;
         }
       }
       game.activePiece = null;
@@ -237,7 +240,8 @@ export function shiftPieceDown() {
     for (let i = 0; i < 4; i++) {
       for (let j = 0; j < 4; j++) {
         if (game.activePiece.shape[game.activePiece.rot][i][j] === 1) {
-          game.board[game.activePiece.row + i][game.activePiece.col + j] = 1;
+          game.board[game.activePiece.row + i][game.activePiece.col + j] =
+            game.activePiece.id;
         }
       }
     }
@@ -256,7 +260,8 @@ export function shiftPieceDown() {
   for (let i = 0; i < 4; i++) {
     for (let j = 0; j < 4; j++) {
       if (game.activePiece.shape[game.activePiece.rot][i][j] === 1)
-        game.board[game.activePiece.row + i][game.activePiece.col + j] = 1;
+        game.board[game.activePiece.row + i][game.activePiece.col + j] =
+            game.activePiece.id;
     }
   }
   return 1;
@@ -322,7 +327,7 @@ export function solidifyPiece() {
       if (y >= 20 || x < 0 || x >= 10) return true;
 
       // collision with settled blocks (with your current single-layer board)
-      if (game.board[y][x] === 1) return true;
+      if (game.board[y][x] !== 0) return true;
     }
   }
   return false; // safe to move down
@@ -373,7 +378,8 @@ export function shiftPieceLeft() {
   for (let i = 0; i < 4; i++) {
     for (let j = 0; j < 4; j++) {
       if (game.activePiece.shape[game.activePiece.rot][i][j] === 1) {
-        game.board[i + game.activePiece.row][j + game.activePiece.col] = 1;
+        game.board[i + game.activePiece.row][j + game.activePiece.col] =
+            game.activePiece.id;
       }
     }
   }
@@ -400,7 +406,7 @@ function isAgainstPieceLeft(leftCells) {
   leftCells.forEach((cell) => {
     let boardRow = game.activePiece.row + cell.r;
     let boardColumn = game.activePiece.col + cell.c;
-    if (game.board[boardRow][boardColumn - 1] === 1) {
+    if (game.board[boardRow][boardColumn - 1] !== 0) {
       isAgainstPieceLeft = true;
     }
   });
@@ -433,7 +439,8 @@ export function shiftPieceRight() {
   for (let i = 0; i < 4; i++) {
     for (let j = 0; j < 4; j++) {
       if (game.activePiece.shape[game.activePiece.rot][i][j] === 1) {
-        game.board[i + game.activePiece.row][j + game.activePiece.col] = 1;
+        game.board[i + game.activePiece.row][j + game.activePiece.col] =
+            game.activePiece.id;
       }
     }
   }
@@ -557,7 +564,7 @@ function isAgainstPieceRight(leftCells) {
     let boardRow = game.activePiece.row + cell.r;
     let boardColumn = game.activePiece.col + cell.c;
     if (boardColumn + 1 > width - 1) return;
-    if (game.board[boardRow][boardColumn + 1] === 1) {
+    if (game.board[boardRow][boardColumn + 1] !== 0) {
       isAgainstPieceRight = true;
     }
   });
