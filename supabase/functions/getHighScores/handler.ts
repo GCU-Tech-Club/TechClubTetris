@@ -5,6 +5,7 @@ import {
   internalServerError,
   jsonResponse,
 } from "@shared/utils/response.ts";
+import { applyCorsHeaders } from "@shared/utils/cors.ts";
 
 /**
  * Handler for retrieving top high scores
@@ -13,24 +14,22 @@ import {
  */
 export async function handleGetHighScores(
   sessionToken: string | undefined,
-  page: number
+  page: number,
+  request?: Request,
 ): Promise<Response> {
   try {
     if (!sessionToken) {
-      return badRequest("Missing session cookie");
+      return badRequest("Missing session cookie", undefined, request);
     }
 
-    await authenticateSession(sessionToken);
+    await authenticateSession(sessionToken, request);
 
     const from = (page - 1) * 10;
     const to = from + 9;
     const scores = await getTopScores(from, to);
 
     const responseHeaders = new Headers();
-    responseHeaders.set("Access-Control-Allow-Origin", "http://127.0.0.1:5500");
-    responseHeaders.set("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-    responseHeaders.set("Access-Control-Allow-Headers", "authorization, x-client-info, apikey, content-type");
-    responseHeaders.set("Access-Control-Allow-Credentials", "true");
+    applyCorsHeaders(responseHeaders, request ?? null);
 
     return jsonResponse({ data: scores }, 200, responseHeaders);
   } catch (error) {
@@ -39,6 +38,6 @@ export async function handleGetHighScores(
       return error; // Return the error response
     }
     const details = error instanceof Error ? error.message : String(error);
-    return internalServerError("Failed to retrieve high scores", details);
+    return internalServerError("Failed to retrieve high scores", details, request);
   }
 }

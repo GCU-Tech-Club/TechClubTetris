@@ -6,6 +6,7 @@ import {
   internalServerError,
   jsonResponse,
 } from "@shared/utils/response.ts";
+import { applyCorsHeaders } from "@shared/utils/cors.ts";
 
 /**
  * Handler for saving a high score
@@ -15,18 +16,19 @@ import {
  */
 export async function handleSaveHighScore(
   sessionToken: string | undefined,
-  requestBody: unknown
+  requestBody: unknown,
+  request?: Request,
 ): Promise<Response> {
   try {
     if (!sessionToken) {
-      return badRequest("Missing session cookie");
+      return badRequest("Missing session cookie", undefined, request);
     }
 
-    const sessionId = await authenticateSession(sessionToken);
+    const sessionId = await authenticateSession(sessionToken, request);
 
     // Validate high score data
     if (!isValidHighScore(requestBody)) {
-      return badRequest("Invalid high score");
+      return badRequest("Invalid high score", undefined, request);
     }
 
     // Type is narrowed by isValidHighScore guard
@@ -40,10 +42,7 @@ export async function handleSaveHighScore(
     });
 
     const responseHeaders = new Headers();
-    responseHeaders.set("Access-Control-Allow-Origin", "http://127.0.0.1:5500");
-    responseHeaders.set("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-    responseHeaders.set("Access-Control-Allow-Headers", "authorization, x-client-info, apikey, content-type");
-    responseHeaders.set("Access-Control-Allow-Credentials", "true");
+    applyCorsHeaders(responseHeaders, request ?? null);
 
     // Return success response
     return jsonResponse(
@@ -61,9 +60,9 @@ export async function handleSaveHighScore(
     }
     // Handle parseJsonBody errors (already formatted)
     if (error instanceof Error && error.message.startsWith("Invalid JSON body"))
-      return badRequest("Invalid JSON body", error.message);
+      return badRequest("Invalid JSON body", error.message, request);
 
     const details = error instanceof Error ? error.message : String(error);
-    return internalServerError("Failed to save high score", details);
+    return internalServerError("Failed to save high score", details, request);
   }
 }
