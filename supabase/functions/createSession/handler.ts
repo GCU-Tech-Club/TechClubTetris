@@ -1,4 +1,5 @@
 import { createSession as createSessionService } from "@shared/services/session.ts";
+import { applyCorsHeaders } from "@shared/utils/cors.ts";
 import {
 	internalServerError,
 	jsonResponse,
@@ -9,17 +10,14 @@ import { setCookie } from "cookie";
  * Handler for creating a new game session
  * @returns Response with session data and JWT cookie or error
  */
-export async function handleCreateSession(): Promise<Response> {
+export async function handleCreateSession(request?: Request): Promise<Response> {
 	try {
 		// Create session using service layer
 		const session = await createSessionService();
 
 		// Create response headers
 		const responseHeaders = new Headers();
-		responseHeaders.set("Access-Control-Allow-Origin", "http://127.0.0.1:5500");
-		responseHeaders.set("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-		responseHeaders.set("Access-Control-Allow-Headers", "authorization, x-client-info, apikey, content-type");
-        responseHeaders.set("Access-Control-Allow-Credentials", "true");
+		applyCorsHeaders(responseHeaders, request ?? null);
 
 		// Create cookie for response
 		setCookie(responseHeaders, {
@@ -43,7 +41,7 @@ export async function handleCreateSession(): Promise<Response> {
 		);
 	} catch (error) {
 		const details = error instanceof Error ? error.message : String(error);
-		return internalServerError("Failed to start game session", details);
+		return internalServerError("Failed to start game session", details, request);
 	}
 }
 

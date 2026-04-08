@@ -1,3 +1,5 @@
+import { applyCorsHeaders } from "./cors.ts";
+
 /**
  * JSON response headers
  * @type {HeadersInit}
@@ -42,18 +44,15 @@ export function jsonResponse(
 export function errorResponse(
   message: string,
   status: number = 500,
-  details?: string | string[] | Record<string, unknown>
+  details?: string | string[] | Record<string, unknown>,
+  corsRequest?: Request,
 ): Response {
   const body: Record<string, unknown> = { error: message };
 
   if (details !== undefined) body.details = details;
 
-
-    const responseHeaders = new Headers();
-    responseHeaders.set("Access-Control-Allow-Origin", "http://127.0.0.1:5500");
-    responseHeaders.set("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-    responseHeaders.set("Access-Control-Allow-Headers", "authorization, x-client-info, apikey, content-type");
-    responseHeaders.set("Access-Control-Allow-Credentials", "true");
+  const responseHeaders = new Headers();
+  applyCorsHeaders(responseHeaders, corsRequest ?? null);
 
   return jsonResponse(body, status, responseHeaders);
 }
@@ -66,10 +65,10 @@ export function errorResponse(
  */
 export function badRequest(
   message: string,
-  details?: string | string[]
+  details?: string | string[],
+  corsRequest?: Request,
 ): Response {
-
-  return errorResponse(message, 400, details);
+  return errorResponse(message, 400, details, corsRequest);
 }
 
 /**
@@ -77,8 +76,11 @@ export function badRequest(
  * @param message Error message
  * @returns Response object
  */
-export function unauthorized(message: string = "Unauthorized"): Response {
-  return errorResponse(message, 401);
+export function unauthorized(
+  message: string = "Unauthorized",
+  corsRequest?: Request,
+): Response {
+  return errorResponse(message, 401, undefined, corsRequest);
 }
 
 /**
@@ -86,8 +88,8 @@ export function unauthorized(message: string = "Unauthorized"): Response {
  * @param message Error message
  * @returns Response object
  */
-export function methodNotAllowed(): Response {
-  return errorResponse("Method not allowed", 405);
+export function methodNotAllowed(corsRequest?: Request): Response {
+  return errorResponse("Method not allowed", 405, undefined, corsRequest);
 }
 
 /**
@@ -98,7 +100,8 @@ export function methodNotAllowed(): Response {
  */
 export function internalServerError(
   message: string = "Internal server error",
-  details?: string
+  details?: string,
+  corsRequest?: Request,
 ): Response {
-  return errorResponse(message, 500, details);
+  return errorResponse(message, 500, details, corsRequest);
 }

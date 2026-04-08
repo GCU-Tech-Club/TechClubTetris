@@ -1,4 +1,5 @@
 import { decodeJwtToken, extractSessionIdFromClaims } from "../utils/jwt.ts";
+import { applyCorsHeaders } from "../utils/cors.ts";
 import { createSupabaseClient } from "../utils/supabase.ts";
 
 /**
@@ -45,7 +46,8 @@ export async function validateSessionExists(
  * @throws Response if authentication fails (to be caught by caller)
  */
 export async function authenticateSession(
-  sessionToken: string
+  sessionToken: string,
+  request?: Request,
 ): Promise<string> {
   try {
     const claims = decodeJwtToken(sessionToken);
@@ -62,10 +64,7 @@ export async function authenticateSession(
       error instanceof Error ? error.message : "Unknown error";
 
     const responseHeaders = new Headers();
-    responseHeaders.set("Access-Control-Allow-Origin", "http://127.0.0.1:5500");
-    responseHeaders.set("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-    responseHeaders.set("Access-Control-Allow-Headers", "authorization, x-client-info, apikey, content-type");
-    responseHeaders.set("Access-Control-Allow-Credentials", "true");
+    applyCorsHeaders(responseHeaders, request ?? null);
 
     // Return unauthorized response (handled by caller)
     throw new Response(

@@ -1,3 +1,4 @@
+import { applyCorsHeaders } from "@shared/utils/cors.ts";
 import { isMethod } from "@shared/utils/request.ts";
 import { methodNotAllowed } from "@shared/utils/response.ts";
 import { getCookies } from "cookie";
@@ -11,17 +12,14 @@ import { handleGetHighScores } from "./handler.ts";
 serve(async (req: Request) => {
     if (req.method === "OPTIONS") {
 		const responseHeaders = new Headers();
-		responseHeaders.set("Access-Control-Allow-Origin", "http://127.0.0.1:5500");
-		responseHeaders.set("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-		responseHeaders.set("Access-Control-Allow-Headers", "authorization, x-client-info, apikey, content-type");
-        responseHeaders.set("Access-Control-Allow-Credentials", "true");
+		applyCorsHeaders(responseHeaders, req);
 		return new Response(null, {
 			status: 204,
 			headers: responseHeaders,
 		});
 	}
 	// Validate request method
-	if (!isMethod(req, "GET")) return methodNotAllowed();
+	if (!isMethod(req, "GET")) return methodNotAllowed(req);
 
 	// Extract session JWT from cookies
 	const cookies = getCookies(req.headers);
@@ -33,5 +31,5 @@ serve(async (req: Request) => {
 	const page = pageParam ? parseInt(pageParam, 10) : 1;
 
 	// Call handler with extracted data
-	return await handleGetHighScores(sessionToken, page);
+	return await handleGetHighScores(sessionToken, page, req);
 });
