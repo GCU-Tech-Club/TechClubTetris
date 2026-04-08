@@ -9,6 +9,29 @@
   --gap: 2px;
   --cols: 10;
   --rows: 20;
+
+  /* Minos — board stores piece id per cell; ids match Pieces.js: 1=I 2=O 3=T 4=S 5=Z 6=J 7=L */
+  --piece-1-light: #6ee7ff;
+  --piece-1-dark: #0891b2;
+  --piece-1-glow: rgba(8, 145, 178, 0.5);
+  --piece-2-light: #fde047;
+  --piece-2-dark: #ca8a04;
+  --piece-2-glow: rgba(202, 138, 4, 0.45);
+  --piece-3-light: #c084fc;
+  --piece-3-dark: #7e22ce;
+  --piece-3-glow: rgba(126, 34, 206, 0.45);
+  --piece-4-light: #4ade80;
+  --piece-4-dark: #15803d;
+  --piece-4-glow: rgba(21, 128, 61, 0.45);
+  --piece-5-light: #fb7185;
+  --piece-5-dark: #be123c;
+  --piece-5-glow: rgba(190, 18, 60, 0.45);
+  --piece-6-light: #60a5fa;
+  --piece-6-dark: #1d4ed8;
+  --piece-6-glow: rgba(29, 78, 216, 0.45);
+  --piece-7-light: #fb923c;
+  --piece-7-dark: #c2410c;
+  --piece-7-glow: rgba(194, 65, 12, 0.45);
 }
 
 * {
@@ -94,11 +117,48 @@ body {
     rgba(255, 255, 255, 0) 40%
   );
 }
-.cell.filled {
-  background: linear-gradient(145deg, var(--filled), #2aa1ff);
+/* Filled cells — one rule per shape (edit --piece-N-* in :root) */
+.cell.filled.piece-1 {
+  background: linear-gradient(145deg, var(--piece-1-light), var(--piece-1-dark));
   box-shadow:
     inset 0 2px 6px rgba(0, 0, 0, 0.5),
-    0 0 8px rgba(90, 209, 255, 0.45);
+    0 0 8px var(--piece-1-glow);
+}
+.cell.filled.piece-2 {
+  background: linear-gradient(145deg, var(--piece-2-light), var(--piece-2-dark));
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.5),
+    0 0 8px var(--piece-2-glow);
+}
+.cell.filled.piece-3 {
+  background: linear-gradient(145deg, var(--piece-3-light), var(--piece-3-dark));
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.5),
+    0 0 8px var(--piece-3-glow);
+}
+.cell.filled.piece-4 {
+  background: linear-gradient(145deg, var(--piece-4-light), var(--piece-4-dark));
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.5),
+    0 0 8px var(--piece-4-glow);
+}
+.cell.filled.piece-5 {
+  background: linear-gradient(145deg, var(--piece-5-light), var(--piece-5-dark));
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.5),
+    0 0 8px var(--piece-5-glow);
+}
+.cell.filled.piece-6 {
+  background: linear-gradient(145deg, var(--piece-6-light), var(--piece-6-dark));
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.5),
+    0 0 8px var(--piece-6-glow);
+}
+.cell.filled.piece-7 {
+  background: linear-gradient(145deg, var(--piece-7-light), var(--piece-7-dark));
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.5),
+    0 0 8px var(--piece-7-glow);
 }
 
 .hud {

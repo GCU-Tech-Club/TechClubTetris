@@ -16,79 +16,84 @@ export function paintBoard() {
   for (let i = 0; i < 20; i++) {
     for (let j = 0; j < 10; j++) {
       if (game.board[i][j] === 0) {
+        cells[i][j].className = "cell";
         cells[i][j].style.backgroundColor = "transparent";
       }
     }
   }
 
   // piece shadow
-  // calculate how far the whole piece can drop
-  let dropDistance = 0;
-  let collision = false;
+  if (game.activePiece) {
+    let dropDistance = 0;
+    let collision = false;
 
-  while (!collision) {
+    while (!collision) {
+      for (let i = 0; i < 4; i++) {
+        for (let j = 0; j < 4; j++) {
+          if (game.activePiece.shape[game.activePiece.rot][i][j] === 1) {
+            let newRow = game.activePiece.row + i + dropDistance + 1;
+            let newCol = game.activePiece.col + j;
+
+            // check if this position is part of the active piece's current position
+            let isPartOfActivePiece = false;
+            for (let x = 0; x < 4; x++) {
+              for (let y = 0; y < 4; y++) {
+                if (
+                  game.activePiece.shape[game.activePiece.rot][x][y] === 1 &&
+                  game.activePiece.row + x === newRow &&
+                  game.activePiece.col + y === newCol
+                ) {
+                  isPartOfActivePiece = true;
+                }
+              }
+            }
+
+            // if newRow is out of bounds or collides with a filled cell that isn't part of the active piece, we have a collision
+            if (
+              newRow >= 20 ||
+              (newRow >= 0 &&
+                game.board[newRow][newCol] !== 0 &&
+                !isPartOfActivePiece)
+            ) {
+              collision = true;
+              break;
+            }
+          }
+        }
+        if (collision) break;
+      }
+
+      if (!collision) dropDistance++;
+    }
+
+    // paint shadow using final drop distance
     for (let i = 0; i < 4; i++) {
       for (let j = 0; j < 4; j++) {
         if (game.activePiece.shape[game.activePiece.rot][i][j] === 1) {
-          let newRow = game.activePiece.row + i + dropDistance + 1;
-          let newCol = game.activePiece.col + j;
+          const shadowRow = game.activePiece.row + i + dropDistance;
+          const shadowCol = game.activePiece.col + j;
 
-          // check if this position is part of the active piece's current position
-          let isPartOfActivePiece = false;
-          for (let x = 0; x < 4; x++) {
-            for (let y = 0; y < 4; y++) {
-              if (
-                game.activePiece.shape[game.activePiece.rot][x][y] === 1 &&
-                game.activePiece.row + x === newRow &&
-                game.activePiece.col + y === newCol
-              ) {
-                isPartOfActivePiece = true;
-              }
-            }
-          }
-
-          // if newRow is out of bounds or collides with a filled cell that isn't part of the active piece, we have a collision
           if (
-            newRow >= 20 ||
-            (newRow >= 0 &&
-              game.board[newRow][newCol] === 1 &&
-              !isPartOfActivePiece)
+            shadowRow >= 0 &&
+            shadowRow < 20 &&
+            shadowCol >= 0 &&
+            shadowCol < 10
           ) {
-            collision = true;
-            break;
+            cells[shadowRow][shadowCol].style.backgroundColor = "var(--shadow)";
           }
         }
       }
-      if (collision) break;
-    }
-
-    if (!collision) dropDistance++;
-  }
-
-  // paint shadow using final drop distance
-  for (let i = 0; i < 4; i++) {
-    for (let j = 0; j < 4; j++) {
-      if (game.activePiece.shape[game.activePiece.rot][i][j] === 1) {
-        const shadowRow = game.activePiece.row + i + dropDistance;
-        const shadowCol = game.activePiece.col + j;
-
-        if (
-          shadowRow >= 0 &&
-          shadowRow < 20 &&
-          shadowCol >= 0 &&
-          shadowCol < 10
-        ) {
-          cells[shadowRow][shadowCol].style.backgroundColor = "var(--shadow)";
-        }
-      }
     }
   }
 
-  // pieces
+  // pieces (per-shape colors: board stores piece id 1–7 per cell)
   for (let i = 0; i < 20; i++) {
     for (let j = 0; j < 10; j++) {
-      if (game.board[i][j] === 1) {
-        cells[i][j].style.backgroundColor = "var(--filled)";
+      const v = game.board[i][j];
+      if (v !== 0) {
+        const el = cells[i][j];
+        el.style.backgroundColor = "";
+        el.className = `cell filled piece-${v}`;
       }
     }
   }
@@ -109,20 +114,16 @@ function tick() {
   paintBoard();
 }
 
-
-
 let gameInterval = setInterval(tick, 200);
 
 //pause and resume functions
 export function pauseGame() {
   clearInterval(gameInterval);
-  document.getElementById('pausePopup').classList.remove('hidden')
-  renderHighScores(document.getElementById('pausePopup').querySelector('ol'));
+  document.getElementById("pausePopup").classList.remove("hidden");
+  renderHighScores(document.getElementById("pausePopup").querySelector("ol"));
 }
 
 export function resumeGame() {
-  document.getElementById('pausePopup').classList.add('hidden')
+  document.getElementById("pausePopup").classList.add("hidden");
   gameInterval = setInterval(tick, 200);
 }
-
-
