@@ -14,7 +14,7 @@ import { paintBoard, pauseGame, resumeGame } from "./GameLoop.js";
 // Shift left with A or arrow left key
 addEventListener("keydown", function (event) {
   if (event.code === "KeyA" || event.code === "ArrowLeft") {
-    event.preventDefault();
+    if (event.code === "ArrowLeft") event.preventDefault();
     shiftPieceLeft();
     paintBoard();
   }
@@ -22,7 +22,7 @@ addEventListener("keydown", function (event) {
 // Shift down with S or arrow down key
 addEventListener("keydown", function (event) {
   if (event.code === "KeyS" || event.code === "ArrowDown") {
-    event.preventDefault();
+    if (event.code === "ArrowDown") event.preventDefault();
     shouldSpawnNewPieceAndShiftPieceDown();
     paintBoard();
   }
@@ -30,7 +30,7 @@ addEventListener("keydown", function (event) {
 // Shift right with D or arrow right key
 addEventListener("keydown", function (event) {
   if (event.code === "KeyD" || event.code === "ArrowRight") {
-    event.preventDefault();
+    if (event.code === "ArrowRight") event.preventDefault();
     shiftPieceRight();
     paintBoard();
   }
@@ -38,7 +38,7 @@ addEventListener("keydown", function (event) {
 // Rotate piece with R key
 addEventListener("keydown", function (event) {
   if (event.code === "KeyR" || event.code === "ArrowUp") {
-    event.preventDefault();
+    if (event.code === "ArrowUp") event.preventDefault();
     rotatePiece();
     paintBoard();
   }
@@ -63,20 +63,19 @@ addEventListener("click", function (event) {
 
 // Pause game with P key
 addEventListener("keydown", function (event) {
-    if (event.code === "KeyP") {
-        pauseGame();
-        event.preventDefault();
-    }
+  if (event.code === "KeyP") {
+    if (game.timer.isRunning) pauseGame();
+  }
 });
 
 // Resume game with Escape key
 addEventListener("keydown", function (event) {
-    if (event.code === "Escape") {
-        resumeGame();
-        event.preventDefault();
-    }
+  if (event.code === "Escape") {
+    resumeGame();
+    event.preventDefault();
+  }
 });
 
 // Pause and Resume buttons
-document.getElementById('pauseBtn').addEventListener('click', pauseGame);
-document.getElementById('resumeBtn').addEventListener('click', resumeGame);
+document.getElementById("pauseBtn").addEventListener("click", pauseGame);
+document.getElementById("resumeBtn").addEventListener("click", resumeGame);
